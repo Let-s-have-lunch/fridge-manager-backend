@@ -1,7 +1,7 @@
 .idea
 .env
 node_modules
-
+prisma/migrations
 
 /src/generated/prisma
 /http

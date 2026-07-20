@@ -12,3 +12,22 @@ datasource db {
   provider     = "mysql"
   relationMode = "prisma"
 }
+
+enum RoleType {
+  USER
+  ADMIN
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  nickname String @unique
+  password String
+  email    String @unique
+
+  birthdate DateTime?
+  role      RoleType  @default(USER)
+}
