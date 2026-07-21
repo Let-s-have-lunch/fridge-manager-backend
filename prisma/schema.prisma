@@ -12,3 +12,19 @@ datasource db {
   provider     = "mysql"
   relationMode = "prisma"
 }
+
+model ShoppingList {
+  id             Int     @id @default(autoincrement())
+  refrigeratorId Int     @map("refrigerator_id")
+  productName    String  @map("product_name")
+  quantity       Float
+  isChecked      Boolean @default(false) @map("is_checked")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // (참고) 만약 Refrigerator(냉장고) 모델이 이미 있다면 아래처럼 관계를 맺어줄 수 있습니다.
+  // refrigerator   Refrigerator @relation(fields: [refrigeratorId], references: [id])
+
+  @@map("shopping_lists") // 데이터베이스에 만들어질 실제 테이블 이름
+}
