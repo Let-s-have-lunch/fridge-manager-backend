@@ -165,6 +165,48 @@ const deleteProduct = async (productId: number) => {
     });
 };
 
+const createProductsByReceipt = async (fridgeId: number, imageFile: Express.Multer.File) => {
+    // [TODO] 실제 OCR 연동 시 아래 주석 해제 및 적용
+    // const ocrResult = await callNaverOcrApi(imageFile.buffer);
+    // 실제로 ocrResult에 객체 형태의 복잡한 데이터가 저장이 된다.
+    // 거기서 '상품 목록' 배열이 있는 위치까지 찾아들어가서 아래의 parsedItems에 저장을 한다.!
+
+    // 임시 모의 데이터 (OCR이 아래처럼 텍스트를 추출했다고 가정)
+    const parsedItems = [
+        { name: "서울우유 1L", quantity: 1, unit: "L" },
+        { name: "양파 1망", quantity: 1, unit: "EA" },
+        { name: "돼지고기 삼겹살", quantity: 600, unit: "G" },
+    ];
+
+    // DB 저장을 위한 데이터 맵핑
+    const productsToCreate = parsedItems.map(item => ({
+        fridgeId: fridgeId,
+        categoryId: 9, // ect 카테고리 id
+        name: item.name,
+        storageType: "REFRIGERATED" as const, // 기본값 냉장
+        quantity: item.quantity,
+        unit: item.unit as "L" | "EA" | "G" | "KG" | "ML",
+        expirationDate: new Date(new Date().setDate(new Date().getDate() + 7)), // 기본 +7일
+        addMethod: "RECEIPT" as const, // 영수증 스캔으로 들어온 데이터임을 명시
+        status: "STORED" as const,
+    }));
+
+    // 다중 등록 실행
+    const result = await prisma.product.createMany({
+        data: productsToCreate,
+    });
+
+    // 프론트엔드에 방금 등록된 영수증 상품들만 내려주기 위해 재조회
+    return prisma.product.findMany({
+        where: {
+            fridgeId: fridgeId,
+            addMethod: "RECEIPT",
+        },
+        orderBy: { createdAt: "desc" },
+        take: result.count, // 방금 생성된 개수만큼만 가져옴
+    });
+};
+
 export default {
     getProductList,
     getFridgeStatistics,
@@ -172,4 +214,5 @@ export default {
     createProduct,
     updateProduct,
     deleteProduct,
+    createProductsByReceipt,
 };

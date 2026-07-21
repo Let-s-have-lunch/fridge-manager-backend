@@ -47,6 +47,10 @@ const updateCategory = async (req: Request, res: Response) => {
             res.status(409).json({ message: "이미 존재하는 카테고리 이름입니다." });
             return;
         }
+        if (error.message === "CANNOT_MODIFY_DEFAULT_CATEGORY") {
+            res.status(403).json({ message: "기본 카테고리는 수정할 수 없습니다." });
+            return;
+        }
         console.log(error);
         res.status(500).json({ message: "서버 오류가 발생했습니다." });
     }
@@ -65,6 +69,10 @@ const deleteCategory = async (req: Request, res: Response) => {
     } catch (error: any) {
         if (error.message === "CATEGORY_NOT_FOUND") {
             res.status(404).json({ message: "해당 카테고리를 찾을 수 없습니다." });
+            return;
+        }
+        if (error.message === "CANNOT_DELETE_DEFAULT_CATEGORY") {
+            res.status(403).json({ message: "기본 카테고리는 삭제할 수 없습니다." });
             return;
         }
         console.log(error);

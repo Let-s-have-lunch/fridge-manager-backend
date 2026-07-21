@@ -2,6 +2,7 @@ import { Router } from "express";
 import { validate } from "../middlewares/validate.ts";
 import { productSchema } from "../schemas/productSchema.ts";
 import productController from "../controllers/productController.ts";
+import {upload} from "../middlewares/uploadMiddleware.ts";
 
 const router = Router();
 
@@ -26,5 +27,12 @@ router.patch("/:productId", validate(productSchema), productController.updatePro
 
 // 제품 삭제
 router.delete("/:productId", productController.deleteProduct);
+
+// 영수증 스캔으로 제품 다중 등록
+router.post(
+    "/fridge/:fridgeId/receipt",
+    upload.single("receiptImage"),
+    productController.createProductsByReceipt,
+);
 
 export default router;

@@ -49,8 +49,9 @@ model fridge {
 }
 
 model Category {
-  id   Int    @id @default(autoincrement())
-  name String
+  id        Int     @id @default(autoincrement())
+  name      String
+  isDefault Boolean @default(false) @map("is_default")
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt

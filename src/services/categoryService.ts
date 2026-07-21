@@ -5,6 +5,7 @@ const getCategoryList = async () => {
         where: { deletedAt: null },
         orderBy: { id: "asc" },
     });
+
 };
 
 const createCategory = async (name: string) => {
@@ -22,6 +23,10 @@ const updateCategory = async (categoryId: number, name: string) => {
         where: { id: categoryId, deletedAt: null },
     });
     if (!target) throw new Error("CATEGORY_NOT_FOUND");
+
+    if (target.isDefault) {
+        throw new Error("CANNOT_MODIFY_DEFAULT_CATEGORY");
+    }
 
     // 2. 변경하려는 이름이 이미 존재하는지 확인 (단, 현재 수정 중인 내 카테고리는 제외)
     const exist = await prisma.category.findFirst({
@@ -47,6 +52,9 @@ const deleteCategory = async (categoryId: number) => {
     });
     if (!target) throw new Error("CATEGORY_NOT_FOUND");
 
+    if (target.isDefault) {
+        throw new Error("CANNOT_DELETE_DEFAULT_CATEGORY");
+    }
     // 2. 하드 삭제(delete)가 아닌 소프트 삭제(Update) 적용
     return prisma.category.update({
         where: { id: categoryId },

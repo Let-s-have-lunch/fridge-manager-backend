@@ -122,6 +122,28 @@ const deleteProduct = async (req: Request, res: Response) => {
     }
 };
 
+const createProductsByReceipt = async (req: Request, res: Response) => {
+    try {
+        const fridgeId = Number(req.params.fridgeId);
+        if (isNaN(fridgeId)) {
+            res.status(400).json({ message: "유효하지 않은 fridgeId 입니다." });
+            return;
+        }
+
+        const imageFile = req.file;
+        if (!imageFile) {
+            res.status(400).json({ message: "영수증 이미지가 없습니다." });
+            return;
+        }
+
+        const result = await productService.createProductsByReceipt(fridgeId, imageFile);
+        res.status(201).json({ message: "영수증 제품 등록 성공", data: result });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "서버 오류가 발생했습니다." });
+    }
+};
+
 export default {
     getProductList,
     getFridgeStatistics,
@@ -129,4 +151,5 @@ export default {
     createProduct,
     updateProduct,
     deleteProduct,
+    createProductsByReceipt,
 };
