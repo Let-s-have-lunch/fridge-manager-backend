@@ -2,7 +2,7 @@ import { Router } from "express";
 import { authenticate } from "../middlewares/auth.ts";
 import { validate } from "../middlewares/validate.ts"; // 검증 미들웨어
 import { shoppingListSchema } from "../schemas/shoppingList/shoppingListSchema.ts"; // 방금 만든 스키마
-import shoppingListTodoController from "../controllers/shoppingListTodo.Controller.ts";
+import shoppingListTodoController from "../controllers/shoppingListTodoController.ts";
 
 const router = Router();
 

@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import shoppingListTodoService from "../services/shoppingListTodo.Service";
+import shoppingListTodoService from "../services/shoppingListTodoService.ts";
 
 // 1. 장보기 항목 추가 (Create)
 const createItem = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
