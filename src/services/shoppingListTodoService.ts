@@ -1,75 +1,84 @@
-import { PrismaClient } from "@prisma/client";
+import prisma from "../config/prisma.ts";
+import {
+    ShoppingListInputType,
+    ShoppingListUpdateInputType,
+} from "../schemas/shoppingList/shoppingListSchema.ts";
 
-const prisma = new PrismaClient();
-
-// 1. 장보기 항목 추가 (Create)
-const createItem = async (refrigeratorId: number, productName: string, quantity: number) => {
-    const newItem = await prisma.shoppingList.create({
-        data: {
-            refrigeratorId,
-            productName,
-            quantity,
-        },
-    });
-    return newItem;
-};
-
-// 2. 특정 냉장고의 장보기 목록 전체 조회 (Read)
+// 1. 특정 냉장고의 장보기 목록 조회
 const getItemsByRefrigeratorId = async (refrigeratorId: number) => {
-    const items = await prisma.shoppingList.findMany({
+    return prisma.shoppingList.findMany({
         where: {
-            refrigeratorId: refrigeratorId,
+            refrigeratorId,
         },
         orderBy: {
-            createdAt: "desc",
+            id: "asc",
         },
     });
-    return items;
 };
 
-// 3. 장보기 항목 수정 및 체크 (Update)
-const updateItem = async (
-    itemId: number,
-    updateData: { productName?: string; quantity?: number; isChecked?: boolean },
-) => {
-    const existingItem = await prisma.shoppingList.findUnique({
-        where: { id: itemId },
+// 2. 장보기 항목 추가 (input 객체 하나로 받도록 수정)
+const createItem = async (refrigeratorId: number, input: ShoppingListInputType) => {
+    return prisma.shoppingList.create({
+        data: {
+            refrigeratorId,
+            productName: input.productName,
+            quantity: input.quantity ?? 1,
+            isChecked: input.isChecked ?? false,
+        },
     });
+};
 
-    if (!existingItem) {
-        throw new Error("NOT_FOUND_SHOPPING_ITEM");
-    }
-
-    const updatedItem = await prisma.shoppingList.update({
+// 3. 장보기 항목 수정 (undefined 에러 방지)
+const updateItem = async (itemId: number, input: ShoppingListUpdateInputType) => {
+    return prisma.shoppingList.update({
         where: {
             id: itemId,
         },
-        data: updateData,
+        data: {
+            ...(input.productName !== undefined && { productName: input.productName }),
+            ...(input.quantity !== undefined && { quantity: input.quantity }),
+            ...(input.isChecked !== undefined && { isChecked: input.isChecked }),
+            ...(input.refrigeratorId !== undefined && { refrigeratorId: input.refrigeratorId }),
+        },
     });
-    return updatedItem;
 };
 
-// 4. 장보기 항목 삭제 (Delete)
+// 4. 장보기 항목 삭제
 const deleteItem = async (itemId: number) => {
-    const existingItem = await prisma.shoppingList.findUnique({
-        where: { id: itemId },
-    });
-
-    if (!existingItem) {
-        throw new Error("NOT_FOUND_SHOPPING_ITEM");
-    }
-
-    await prisma.shoppingList.delete({
+    return prisma.shoppingList.delete({
         where: {
             id: itemId,
         },
     });
 };
 
-// 💡 원하시던 맨 밑에 묶어서 내보내기!
+// 5. 체크 상태 토글 (추가 기능)
+const toggleItem = async (refrigeratorId: number, itemId: number) => {
+    const item = await prisma.shoppingList.findFirst({
+        where: {
+            id: itemId,
+            refrigeratorId,
+        },
+    });
+
+    if (!item) {
+        throw new Error("NOT_FOUND_SHOPPING_ITEM");
+    }
+
+    return prisma.shoppingList.update({
+        where: {
+            id: itemId,
+        },
+        data: {
+            isChecked: !item.isChecked,
+        },
+    });
+};
+
 export default {
-    createItem,
     getItemsByRefrigeratorId,
+    createItem,
     updateItem,
     deleteItem,
+    toggleItem,
 };
