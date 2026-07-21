@@ -1,9 +1,9 @@
-import express from "express";
+import { Router } from "express";
 import { authenticate } from "../middlewares/auth.ts";
-import { ShoppingListTodoController } from "../controllers/shoppingListTodo.Controller"; // 소문자 c 확인!
+// 💡 클래스가 아니라 예전처럼 객체로 묶인 컨트롤러를 불러옵니다.
+import shoppingListTodoController from "../controllers/shoppingListTodo.Controller.ts";
 
-const router = express.Router();
-const shoppingListTodoController = new ShoppingListTodoController();
+const router = Router();
 
 // 1. 장보기 항목 추가 (Create)
 router.post("/", authenticate, shoppingListTodoController.createItem);

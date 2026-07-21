@@ -32,7 +32,7 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
         const decoded = jwt.verify(token, secretKey);
 
         // 검증된 유저 정보를 req.user에 저장 (이후 컨트롤러에서 사용 가능)
-        req.user = decoded;
+        req.user = decoded as any;
 
         next(); // 다음 미들웨어나 컨트롤러로 이동
     } catch (error) {
