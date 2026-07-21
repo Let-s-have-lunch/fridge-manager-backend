@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
+import fridgeRouter from "./routes/fridgeRouter.ts";
 
 dotenv.config();
 
@@ -17,6 +18,8 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use("/fridge", fridgeRouter);
 
 app.listen(PORT, () => {
     console.log(`서버 실행됨! http://localhost:${PORT}`);
