@@ -13,6 +13,31 @@ datasource db {
   relationMode = "prisma"
 }
 
+enum StorageType {
+  REFRIGERATED
+  FROZEN
+  ROOM_TEMP
+}
+
+enum ProductStatus {
+  STORED
+  CONSUMED
+  DISCARDED
+}
+
+enum Unit {
+  EA
+  G
+  KG
+  ML
+  L
+}
+
+enum AddMethod {
+  MANUAL
+  RECEIPT
+}
+
 model fridge {
   id        Int       @id @default(autoincrement())
   name      String
@@ -20,5 +45,41 @@ model fridge {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  // products  Product[]
+  products Product[]
+}
+
+model Category {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  products Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id             Int           @id @default(autoincrement())
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  name           String
+  memo           String?
+  addMethod      AddMethod     @default(MANUAL) @map("add_method")
+  storageType    StorageType   @map("storage_type")
+  quantity       Float
+  unit           Unit
+  expirationDate DateTime      @map("expiration_date")
+  status         ProductStatus @default(STORED)
+
+  fridgeId   Int      @map("refrigerator_id")
+  fridge     fridge   @relation(fields: [fridgeId], references: [id])
+  categoryId Int      @map("category_id")
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  @@index([fridgeId])
+  @@index([categoryId])
+  @@map("products")
 }
