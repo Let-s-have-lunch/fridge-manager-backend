@@ -18,6 +18,13 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
 
         const token = authHeader.split(" ")[1];
 
+        // 💡 해결 방법: 토큰 값이 비어있지 않은지 한 번 더 확실하게 검사합니다.
+        // 이 코드가 들어가면 타입스크립트가 "아, token은 무조건 문자열(string)이구나" 하고 안심합니다.
+        if (!token) {
+            res.status(401).json({ message: "토큰 값이 비어있습니다. 형식을 확인해주세요." });
+            return;
+        }
+
         // 환경변수에서 시크릿 키 가져오기 (없으면 에러 방지용 기본값)
         const secretKey = process.env.JWT_SECRET || "your-secret-key";
 
