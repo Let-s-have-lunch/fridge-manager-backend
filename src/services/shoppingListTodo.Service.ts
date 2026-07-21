@@ -1,9 +1,9 @@
 import { PrismaClient } from "@prisma/client";
 
-// 공통으로 쓸 수 있는 Prisma 인스턴스 (파일 상단에 두면 에디터가 확실하게 인식합니다)
 const prisma = new PrismaClient();
 
-export class ShoppingListService {
+// 💡 클래스 이름을 컨트롤러와 똑같이 'ShoppingListTodoService'로 맞춰줍니다!
+export class ShoppingListTodoService {
     // 1. 장보기 항목 추가 (Create)
     public async createItem(refrigeratorId: number, productName: string, quantity: number) {
         const newItem = await prisma.shoppingList.create({
