@@ -2,7 +2,7 @@ import prisma from "../config/prisma.ts";
 import {
     ShoppingListInputType,
     ShoppingListUpdateInputType,
-} from "../schemas/shoppingList/shoppingListSchema.ts";
+} from "../schemas/shoppingList/shoppingListTodoSchema.ts";
 
 // 1. 특정 냉장고의 장보기 목록 조회
 const getItemsByRefrigeratorId = async (refrigeratorId: number) => {
@@ -17,7 +17,7 @@ const getItemsByRefrigeratorId = async (refrigeratorId: number) => {
 };
 
 // 2. 장보기 항목 추가 (input 객체 하나로 받도록 수정)
-const createItem = async (refrigeratorId: number, input: ShoppingListInputType) => {
+const createItem = async (refrigeratorId: number, productName: string, p0: number) => {
     return prisma.shoppingList.create({
         data: {
             refrigeratorId,

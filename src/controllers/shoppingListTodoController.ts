@@ -1,7 +1,8 @@
 import { Response } from "express";
 import { AuthRequest } from "../middlewares/auth.ts";
 import shoppingListTodoService from "../services/shoppingListTodoService.ts";
-import { ShoppingListInputType } from "../schemas/shoppingList/shoppingListSchema.ts";
+import { ShoppingListInputType } from "../schemas/shoppingList/shoppingListTodoSchema.ts";
+
 
 // 1. 장보기 항목 추가 (Create)
 const createItem = async (req: AuthRequest, res: Response) => {
@@ -10,23 +11,39 @@ const createItem = async (req: AuthRequest, res: Response) => {
             return res.status(401).json({ message: "인증되지 않은 사용자입니다." });
         }
 
-        // ShoppingListInputType을 안전하게 구조분해 할당합니다.
-        const { refrigeratorId, productName, quantity } = req.body as ShoppingListInputType & {
-            refrigeratorId: number;
-        };
+        // 💡 1. req.body가 비어있을 경우를 대비해 빈 객체를 기본값으로 둡니다.
+        // 강제 타입 변환(as ...)을 제거하여 타입스크립트 충돌을 원천 차단합니다.
+        const body = req.body || {};
+        const productName = body.productName;
+        const quantity = body.quantity;
 
-        if (!refrigeratorId || !productName) {
-            return res.status(400).json({ message: "냉장고 ID와 상품명은 필수 입력 항목입니다." });
+        // 💡 2. URL 경로(/refrigerators/:refrigeratorId/...) 또는 바디에서 ID를 모두 찾습니다.
+        const refrigeratorId = req.params.refrigeratorId || body.refrigeratorId;
+
+        // 💡 3. 필수 값 방어 로직 (데이터가 없거나 타입이 이상하면 바로 차단)
+        if (!refrigeratorId) {
+            return res.status(400).json({ message: "냉장고 ID가 필요합니다." });
+        }
+        if (!productName || typeof productName !== "string" || productName.trim() === "") {
+            return res.status(400).json({ message: "유효한 상품명이 필요합니다." });
         }
 
-        if (isNaN(Number(refrigeratorId))) {
-            return res.status(400).json({ message: "유효하지 않은 냉장고 ID 형식입니다." });
+        // 💡 4. 숫자형 데이터 안전하게 변환
+        const parsedRefrigeratorId = Number(refrigeratorId);
+        if (isNaN(parsedRefrigeratorId)) {
+            return res.status(400).json({ message: "냉장고 ID는 숫자여야 합니다." });
         }
 
+        // quantity가 없거나 숫자가 아니면 무조건 기본값 1로 셋팅
+        const parsedQuantity = (quantity !== undefined && !isNaN(Number(quantity)))
+            ? Number(quantity)
+            : 1;
+
+        // 💡 5. 서비스 호출 (만약 여기서 에러가 난다면 서비스 함수의 인자 형태가 문제일 수 있습니다)
         const newItem = await shoppingListTodoService.createItem(
-            Number(refrigeratorId),
+            parsedRefrigeratorId,
             productName,
-            quantity ?? 1,
+            parsedQuantity
         );
 
         return res.status(201).json({
@@ -34,7 +51,8 @@ const createItem = async (req: AuthRequest, res: Response) => {
             data: newItem,
         });
     } catch (error) {
-        console.error(error);
+        // 에러 로그를 좀 더 상세히 찍어 추적이 쉽도록 변경
+        console.error("createItem 실행 중 에러 발생:", error);
         return res.status(500).json({
             message: "장보기 항목 등록 중 서버 오류가 발생했습니다.",
         });

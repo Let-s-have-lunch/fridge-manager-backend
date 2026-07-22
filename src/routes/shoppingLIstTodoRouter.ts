@@ -5,7 +5,7 @@ import { validate } from "../middlewares/validate.ts";
 import {
     shoppingListSchema,
     shoppingListUpdateSchema,
-} from "../schemas/shoppingList/shoppingListSchema.ts";
+} from "../schemas/shoppingList/shoppingListTodoSchema.ts";
 import shoppingListTodoController from "../controllers/shoppingListTodoController.ts";
 
 const router = Router();
