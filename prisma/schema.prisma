@@ -33,6 +33,35 @@ enum AddMethod {
   RECEIPT
 }
 
+enum RoleType {
+  USER
+  ADMIN
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  nickname String @unique
+  password String
+  email    String @unique
+
+  birthdate DateTime?
+  role      RoleType  @default(USER)
+
+  categories Category[]
+}
+
+model Notice {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  title     String
+  content   String
+}
+
 model fridge {
   id        Int       @id @default(autoincrement())
   name      String
@@ -52,8 +81,12 @@ model Category {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
+  userId Int?  @map("user_id")
+  user   User? @relation(fields: [userId], references: [id])
+
   products Product[]
 
+  @@index([userId])
   @@map("categories")
 }
 

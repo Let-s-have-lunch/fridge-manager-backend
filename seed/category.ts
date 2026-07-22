@@ -9,7 +9,6 @@ import prisma from "../src/config/prisma.ts";
 // isDefault가 true인 배열을 먼저 아이콘과 함께 뿌려주고
 // 그 아래에 사용자가 직접 등록한 isDefault가 false인 카테고리를 뿌려줍니다.
 
-// 그리고 맨 밑에 카테고리 생성 버튼을 넣습니다
 
 const initialCategories = [
     { id: 1, name: "채소류" },
