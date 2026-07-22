@@ -12,15 +12,21 @@ import prisma from "../src/config/prisma.ts";
 
 
 const initialCategories = [
-    { id: 1, name: "채소류" },
-    { id: 2, name: "과일류" },
-    { id: 3, name: "육류/해산물" },
-    { id: 4, name: "유제품" },
-    { id: 5, name: "가공식품" },
-    { id: 6, name: "양념/소스류" },
-    { id: 7, name: "반찬류/조리된 음식" },
-    { id: 8, name: "음료" },
-    { id: 9, name: "기타" },
+    { id: 1, name: "채소류", icon: "carrot" },
+    { id: 2, name: "과일류", icon: "fruit-cherries" },
+    { id: 3, name: "육류/해산물", icon: "food-steak" },
+    { id: 4, name: "유제품", icon: "cheese" },
+    { id: 5, name: "가공식품", icon: "food-hot-dog" },
+    { id: 6, name: "양념/소스류", icon: "shaker-outline" },
+    { id: 7, name: "반찬류/조리된 음식", icon: "pot-steam" },
+    { id: 8, name: "음료", icon: "cup-water" },
+    { id: 9, name: "빵/베이커리류", icon: "bread-slice" },
+    { id: 10, name: "간식/과자류", icon: "candy-outline" },
+    { id: 11, name: "건강/다이어트식", icon: "leaf" },
+    { id: 12, name: "약품/영양제", icon: "pill" }, // 💡 약품 추가
+    { id: 13, name: "화장품", icon: "lotion" }, // 💡 화장품 추가
+    { id: 14, name: "유아/이유식", icon: "baby-bottle-outline" }, // 💡 아기 용품
+    { id: 15, name: "기타", icon: "dots-horizontal" }, // 💡 맨 마지막 기타
 ];
 
 async function main() {
@@ -30,14 +36,15 @@ async function main() {
         // upsert: 데이터가 있으면 업데이트(update), 없으면 생성(create)
         const created = await prisma.category.upsert({
             where: { id: category.id },
-            update: { isDefault: true }, // 이미 있으면 isDefault만 true로 덮어씌움
+            update: { isDefault: true, icon: category.icon, name: category.name }, // 이미 있으면 최신화
             create: {
                 id: category.id,
                 name: category.name,
+                icon: category.icon,
                 isDefault: true,
             },
         });
-        console.log(`✅ 카테고리 세팅 완료: [${created.id}] ${created.name}`);
+        console.log(`✅ 카테고리 세팅 완료: [${created.id}] ${created.name} (${created.icon})`);
     }
 
     console.log("🎉 시딩이 완료되었습니다!");
