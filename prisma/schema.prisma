@@ -13,24 +13,26 @@ datasource db {
   relationMode = "prisma"
 }
 
+model User {
+  id Int @id @default(autoincrement())
+  // (이메일, 비밀번호 등등 기존에 있던 필드들은 그대로 두세요!)
+
+  // 🌟 이 줄을 User 모델 맨 아래에 꼭 추가해주세요!
+  shoppingLists ShoppingList[]
+}
+
 model ShoppingList {
-  id             Int    @id @default(autoincrement())
-  refrigeratorId Int    @map("refrigerator_id")
-  productName    String @map("product_name")
-  quantity       Float
+  id Int @id @default(autoincrement())
 
-  // 💡 새롭게 추가한 부분: 수량 단위 (예: "개", "g", "팩") / 안 적을 수도 있으니 String? 로 설정
-  unit String?
+  memo      String
+  date      DateTime
+  isChecked Boolean  @default(false)
 
-  isChecked Boolean @default(false) @map("is_checked")
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // (참고) 만약 Refrigerator(냉장고) 모델이 이미 있다면 아래처럼 관계를 맺어줄 수 있습니다.
-  // refrigerator   Refrigerator @relation(fields: [refrigeratorId], references: [id])
-
-  // 🚨 새롭게 추가한 부분: relationMode="prisma" 환경에서 경고 안 뜨게 해주고 검색 속도 올려주는 인덱스
-  @@index([refrigeratorId])
-  @@map("shopping_lists") // 데이터베이스에 만들어질 실제 테이블 이름
+  @@index([userId])
 }

@@ -1,68 +1,50 @@
-import prisma from "../config/prisma.ts";
-import {
-    ShoppingListInputType,
-    ShoppingListUpdateInputType,
-} from "../schemas/shoppingList/shoppingListTodoSchema.ts";
+import prisma from "../utils/prisma.ts";
+import { ShoppingListInputType } from "../schemas/shoppingList/shoppingListTodoSchema.ts";
 
-// 1. 특정 냉장고의 장보기 목록 조회
-const getItemsByRefrigeratorId = async (refrigeratorId: number) => {
+// 🌟 주 단위 조회 (기존 getTodoListByRange 구조를 그대로 활용)
+const getItems = async (userId: number, startDate: Date, endDate: Date) => {
+    const start = new Date(startDate);
+    start.setHours(0, 0, 0, 0);
+
+    const nextDayOfEnd = new Date(endDate);
+    nextDayOfEnd.setHours(0, 0, 0, 0);
+    nextDayOfEnd.setDate(nextDayOfEnd.getDate() + 1);
+
     return prisma.shoppingList.findMany({
         where: {
-            refrigeratorId,
+            userId,
+            date: {
+                gte: start,
+                lt: nextDayOfEnd,
+            },
         },
         orderBy: {
-            id: "asc",
+            date: "asc",
         },
     });
 };
 
-// 2. 장보기 항목 추가 (input 객체 하나로 받도록 수정)
-const createItem = async (refrigeratorId: number, productName: string, p0: number) => {
+const createItem = async (itemData: ShoppingListInputType, userId: number) => {
     return prisma.shoppingList.create({
         data: {
-            refrigeratorId,
-            productName: input.productName,
-            quantity: input.quantity ?? 1,
-            isChecked: input.isChecked ?? false,
+            memo: itemData.memo,
+            date: new Date(itemData.date),
+            isChecked: itemData.isChecked ?? false,
+            user: { connect: { id: userId } },
         },
     });
 };
 
-// 3. 장보기 항목 수정 (undefined 에러 방지)
-const updateItem = async (itemId: number, input: ShoppingListUpdateInputType) => {
-    return prisma.shoppingList.update({
-        where: {
-            id: itemId,
-        },
-        data: {
-            ...(input.productName !== undefined && { productName: input.productName }),
-            ...(input.quantity !== undefined && { quantity: input.quantity }),
-            ...(input.isChecked !== undefined && { isChecked: input.isChecked }),
-            ...(input.refrigeratorId !== undefined && { refrigeratorId: input.refrigeratorId }),
-        },
-    });
-};
-
-// 4. 장보기 항목 삭제
-const deleteItem = async (itemId: number) => {
-    return prisma.shoppingList.delete({
-        where: {
-            id: itemId,
-        },
-    });
-};
-
-// 5. 체크 상태 토글 (추가 기능)
-const toggleItem = async (refrigeratorId: number, itemId: number) => {
+const updateItem = async (userId: number, itemId: number, input: ShoppingListInputType) => {
     const item = await prisma.shoppingList.findFirst({
         where: {
             id: itemId,
-            refrigeratorId,
+            userId,
         },
     });
 
     if (!item) {
-        throw new Error("NOT_FOUND_SHOPPING_ITEM");
+        return null;
     }
 
     return prisma.shoppingList.update({
@@ -70,15 +52,58 @@ const toggleItem = async (refrigeratorId: number, itemId: number) => {
             id: itemId,
         },
         data: {
-            isChecked: !item.isChecked,
+            ...input,
+        },
+    });
+};
+
+const deleteItem = async (id: number, userId: number) => {
+    const item = await prisma.shoppingList.findFirst({
+        where: {
+            id,
+            userId,
+        },
+    });
+
+    if (!item) {
+        throw new Error("NOT_FOUND_ITEM");
+    }
+
+    return prisma.shoppingList.delete({
+        where: {
+            id,
+        },
+    });
+};
+
+const toggleTodo = async (userId: number, itemId: number) => {
+    const item = await prisma.shoppingList.findFirst({
+        where: {
+            id: itemId,
+            userId,
+        },
+    });
+
+    if (!item) {
+        throw new Error("NOT_FOUND_ITEM");
+    }
+
+    const newStatus = !item.isChecked;
+
+    return prisma.shoppingList.update({
+        where: {
+            id: itemId,
+        },
+        data: {
+            isChecked: newStatus,
         },
     });
 };
 
 export default {
-    getItemsByRefrigeratorId,
+    getItems,
     createItem,
     updateItem,
     deleteItem,
-    toggleItem,
+    toggleTodo,
 };
