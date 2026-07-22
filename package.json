@@ -8,7 +8,7 @@
         "dev": "tsx watch src/index.ts",
         "prisma:migrate": "prisma migrate dev",
         "prisma:generate": "prisma generate",
-        "seed": "tsx seed/category.ts"
+        "seed:category": "tsx seed/category.ts"
     },
     "keywords": [],
     "author": "",

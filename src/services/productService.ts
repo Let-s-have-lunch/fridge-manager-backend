@@ -1,7 +1,8 @@
 import prisma from "../config/prisma.ts";
 import { ProductInputType } from "../schemas/productSchema.ts";
 
-const getProductList = async (fridgeId: number, sort?: string, keyword?: string) => {
+const getProductList = async (userId: number, fridgeId: number, sort?: string, keyword?: string) => {
+    // 기본 정렬 기준 (최근 생성한게 위로 올라오게)
     let orderByCondition: any = { createdAt: "desc" };
 
     // 정렬 기준이 있을때
@@ -14,8 +15,9 @@ const getProductList = async (fridgeId: number, sort?: string, keyword?: string)
     return prisma.product.findMany({
         where: {
             fridgeId: fridgeId,
+            // 💡 이 냉장고가 내 것인지 확인! (이거 한 줄만 추가하면 완벽 방어됩니다)
+            fridge: { userId: userId },
             status: "STORED",
-
             // (keyword가 있을 때만 name 속성을 객체에 추가합니다)
             ...(keyword && { name: { contains: keyword } }),
         },
@@ -27,7 +29,7 @@ const getProductList = async (fridgeId: number, sort?: string, keyword?: string)
 };
 
 
-const getFridgeStatistics = async (fridgeId: number, year: number, month: number) => {
+const getUserStatistics = async (userId: number, year: number, month: number) => {
     // 1. 해당 월의 시작일과 다음 월의 시작일 계산 (예: 7월이면 7월 1일 ~ 8월 1일 직전까지)
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 1);
@@ -35,15 +37,22 @@ const getFridgeStatistics = async (fridgeId: number, year: number, month: number
     // 2. 소비 / 폐기 통계 (선택한 달에 업데이트된 데이터만 가져오기)
     const consumedCount = await prisma.product.count({
         where: {
-            fridgeId: fridgeId,
+            // 1. "Product의 부모인 fridge 테이블을 봐!
+            // 그 fridge의 주인(userId)이 지금 요청한 유저(userId)인 것들만 찾아."
+            fridge: { userId: userId },
+
+            // 2. "그렇게 찾은 내 냉장고 속 제품들 중에서,
+            // 상태가 '다 먹음(CONSUMED)'인 것들만 추려내고,"
             status: "CONSUMED",
+
+            // 3. "그 다 먹은 날짜(updatedAt)가 '이번 달' 안에 속하는 것들만"
             updatedAt: { gte: startDate, lt: endDate }, // startDate 이상, endDate 미만
         },
     });
 
     const discardedCount = await prisma.product.count({
         where: {
-            fridgeId: fridgeId,
+            fridge: { userId: userId },
             status: "DISCARDED",
             updatedAt: { gte: startDate, lt: endDate },
         },
@@ -53,7 +62,16 @@ const getFridgeStatistics = async (fridgeId: number, year: number, month: number
     const topConsumed = await prisma.product.groupBy({
         by: ["name"],
         where: {
-            fridgeId: fridgeId,
+            // 🚨 주의: groupBy를 사용할 때는 직접 관계 쿼리(fridge: {...})를 쓸 수 없습니다!
+            // 따라서 냉장고 테이블에서 해당 유저의 냉장고 ID들을 먼저 찾아와야 합니다.
+            fridgeId: {
+                in: (
+                    await prisma.fridge.findMany({
+                        where: { userId: userId },
+                        select: { id: true },
+                    })
+                ).map(f => f.id),
+            },
             status: "CONSUMED",
             updatedAt: { gte: startDate, lt: endDate },
         },
@@ -78,7 +96,7 @@ const getFridgeStatistics = async (fridgeId: number, year: number, month: number
     // 오늘 자정(00:00:00)보다 작음 == "어제 또는 그 이전 날짜"
     const expiredProducts = await prisma.product.findMany({
         where: {
-            fridgeId: fridgeId,
+            fridge: { userId: userId },
             status: "STORED",
             expirationDate: { lt: today },
         },
@@ -89,7 +107,7 @@ const getFridgeStatistics = async (fridgeId: number, year: number, month: number
     // == "오늘 기한인 상품도 여기에 안전하게 포함됨! (D-Day)"
     const expiringSoonProducts = await prisma.product.findMany({
         where: {
-            fridgeId: fridgeId,
+            fridge: { userId: userId },
             status: "STORED",
             expirationDate: { gte: today, lte: threeDaysLater },
         },
@@ -106,9 +124,9 @@ const getFridgeStatistics = async (fridgeId: number, year: number, month: number
     };
 };
 
-const getProductById = async (productId: number) => {
-    const product = await prisma.product.findUnique({
-        where: { id: productId },
+const getProductById = async (userId: number, productId: number) => {
+    const product = await prisma.product.findFirst({
+        where: { id: productId, fridge: { userId: userId } },
         include: { category: true }, // 상세 조회 시 카테고리 정보도 같이 넘겨줍니다
     });
 
@@ -119,7 +137,13 @@ const getProductById = async (productId: number) => {
     return product;
 };
 
-const createProduct = async (fridgeId: number, data: ProductInputType) => {
+const createProduct = async (userId: number, fridgeId: number, data: ProductInputType) => {
+    // 💡 내 냉장고가 맞는지 확인
+    const targetFridge = await prisma.fridge.findFirst({
+        where: { id: fridgeId, userId: userId },
+    });
+    if (!targetFridge) throw new Error("UNAUTHORIZED_ACCESS");
+
     return prisma.product.create({
         data: {
             fridgeId: fridgeId,
@@ -136,9 +160,9 @@ const createProduct = async (fridgeId: number, data: ProductInputType) => {
     });
 };
 
-const updateProduct = async (productId: number, data: ProductInputType) => {
+const updateProduct = async (userId: number, productId: number, data: ProductInputType) => {
     // 수정 전 제품이 실제로 존재하는지 확인
-    await getProductById(productId);
+    await getProductById(userId, productId);
 
     return prisma.product.update({
         where: { id: productId },
@@ -155,9 +179,9 @@ const updateProduct = async (productId: number, data: ProductInputType) => {
     });
 };
 
-const deleteProduct = async (productId: number) => {
+const deleteProduct = async (userId: number, productId: number) => {
     // 삭제 전 제품이 실제로 존재하는지 확인
-    await getProductById(productId);
+    await getProductById(userId, productId);
 
     // 제품 테이블(자식)은 하드 삭제(Hard Delete) 처리합니다
     return prisma.product.delete({
@@ -165,7 +189,17 @@ const deleteProduct = async (productId: number) => {
     });
 };
 
-const createProductsByReceipt = async (fridgeId: number, imageFile: Express.Multer.File) => {
+const createProductsByReceipt = async (
+    userId: number,
+    fridgeId: number,
+    imageFile: Express.Multer.File,
+) => {
+    // 💡 1. 영수증을 등록하려는 냉장고가 내 냉장고가 맞는지 먼저 검증!
+    const targetFridge = await prisma.fridge.findFirst({
+        where: { id: fridgeId, userId: userId },
+    });
+    if (!targetFridge) throw new Error("UNAUTHORIZED_ACCESS");
+
     // [TODO] 실제 OCR 연동 시 아래 주석 해제 및 적용
     // const ocrResult = await callNaverOcrApi(imageFile.buffer);
     // 실제로 ocrResult에 객체 형태의 복잡한 데이터가 저장이 된다.
@@ -209,7 +243,7 @@ const createProductsByReceipt = async (fridgeId: number, imageFile: Express.Mult
 
 export default {
     getProductList,
-    getFridgeStatistics,
+    getUserStatistics,
     getProductById,
     createProduct,
     updateProduct,
