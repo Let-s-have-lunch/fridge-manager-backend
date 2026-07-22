@@ -33,7 +33,35 @@ enum AddMethod {
   RECEIPT
 }
 
-model fridge {
+enum RoleType {
+  USER
+  ADMIN
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  nickname String @unique
+  password String
+  email    String @unique
+
+  birthdate DateTime?
+  role      RoleType  @default(USER)
+}
+
+model Notice {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  title     String
+  content   String
+}
+
+model Fridge {
   id        Int       @id @default(autoincrement())
   name      String
   createdAt DateTime  @default(now())

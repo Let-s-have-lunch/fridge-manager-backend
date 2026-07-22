@@ -4,6 +4,9 @@ import cors from "cors";
 import fridgeRouter from "./routes/fridgeRouter.ts";
 import productRouter from "./routes/productRouter.ts";
 import categoryRouter from "./routes/categoryRouter.ts";
+import adminUserRouter from "./routes/admin/user/adminUserRouter.ts";
+import adminNoticeRouter from "./routes/adminNoticeRouter.ts";
+import adminRouter from "./routes/admin/adminRouter.ts";
 
 dotenv.config();
 
@@ -24,6 +27,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/fridges", fridgeRouter);
 app.use("/products", productRouter);
 app.use("/categories", categoryRouter);
+app.use("/admin", adminRouter);
 
 app.listen(PORT, () => {
     console.log(`서버 실행됨! http://localhost:${PORT}`);
