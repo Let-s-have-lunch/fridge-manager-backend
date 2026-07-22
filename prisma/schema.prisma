@@ -50,6 +50,8 @@ model User {
 
   birthdate DateTime?
   role      RoleType  @default(USER)
+
+  categories Category[]
 }
 
 model Notice {
@@ -80,8 +82,12 @@ model Category {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
+  userId Int?  @map("user_id")
+  user   User? @relation(fields: [userId], references: [id])
+
   products Product[]
 
+  @@index([userId])
   @@map("categories")
 }
 

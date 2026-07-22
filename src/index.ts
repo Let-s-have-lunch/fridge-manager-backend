@@ -4,9 +4,9 @@ import cors from "cors";
 import fridgeRouter from "./routes/fridgeRouter.ts";
 import productRouter from "./routes/productRouter.ts";
 import categoryRouter from "./routes/categoryRouter.ts";
-import adminUserRouter from "./routes/admin/user/adminUserRouter.ts";
-import adminNoticeRouter from "./routes/adminNoticeRouter.ts";
 import adminRouter from "./routes/admin/adminRouter.ts";
+import userRouter from "./routes/userRouter.ts";
+import noticeRouter from "./routes/noticeRouter.ts";
 
 dotenv.config();
 
@@ -27,6 +27,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/fridges", fridgeRouter);
 app.use("/products", productRouter);
 app.use("/categories", categoryRouter);
+app.use("/users", userRouter);
+app.use("/notice", noticeRouter);
 app.use("/admin", adminRouter);
 
 app.listen(PORT, () => {

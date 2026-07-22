@@ -1,8 +1,9 @@
 import { NextFunction, Request, Response } from "express";
-import jwtUtil from "../utils/jwt/jwtUtil.ts";
 import jwt from "jsonwebtoken";
-import { RoleType, User } from "../generated/prisma/client.ts";
 import * as core from "express-serve-static-core";
+import { RoleType, User } from "../generated/prisma/client.ts";
+import userService from "../services/userService.ts";
+import jwtUtil from "../utils/jwt/jwtUtil.ts";
 
 export interface AuthRequest<
     P = core.ParamsDictionary,

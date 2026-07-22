@@ -1,15 +1,15 @@
 import prisma from "../src/config/prisma.ts";
 
-// 기본 9개의 카테고리를 씨드작업 하고 시작합니다.
-// 아래에 생성한 9개의 카테고리는 isDefault = true로 생성되고
-// 사용자가 직접 추가한 카테고리는 isDefault = false(기본값)로 들어갑니다.
+// 🌱 기본 9개의 공통 카테고리를 DB에 세팅(Seeding)합니다.
+// 아래에 생성한 9개의 카테고리는 isDefault = true (관리자 제공 기본 카테고리)로 생성되며,
+// 사용자가 앱에서 직접 추가하는 커스텀 카테고리는 isDefault = false 로 저장됩니다.
 
-// 프론트엔드 쪽에서는 카테고리 목록을 받아와서 사용하는데
-// filter 메소드를 이용해서 isDefault가 true인 배열과, false인 배열을 각각 다른 변수에 담아서
-// isDefault가 true인 배열을 먼저 아이콘과 함께 뿌려주고
-// 그 아래에 사용자가 직접 등록한 isDefault가 false인 카테고리를 뿌려줍니다.
+// 💡 [프론트엔드 사용 가이드]
+// 백엔드의 GET API를 호출하면 "기본 카테고리(9개) + 해당 유저가 직접 만든 카테고리"가 합쳐진 배열이 응답으로 옵니다.
+// 프론트엔드에서는 이 배열을 받아 filter 메소드를 이용해 두 그룹으로 나눕니다:
+// 1. item.isDefault === true 인 배열: 화면 상단에 아이콘과 함께 고정 노출
+// 2. item.isDefault === false 인 배열: 그 아래에 사용자가 등록한 카테고리 목록으로 노출
 
-// 그리고 맨 밑에 카테고리 생성 버튼을 넣습니다
 
 const initialCategories = [
     { id: 1, name: "채소류" },
