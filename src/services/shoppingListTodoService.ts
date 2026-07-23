@@ -1,25 +1,24 @@
 import prisma from "../utils/prisma.ts";
 import { ShoppingListInputType } from "../schemas/shoppingList/shoppingListTodoSchema.ts";
 
-// 🌟 주 단위 조회 (기존 getTodoListByRange 구조를 그대로 활용)
-const getItems = async (userId: number, startDate: Date, endDate: Date) => {
-    const start = new Date(startDate);
+// 🌟 하루 단위 조회 (특정 날짜 하루를 쿼리로 받아 조회, id 기준 오름차순 정렬)
+const getItems = async (userId: number, targetDate: Date) => {
+    const start = new Date(targetDate);
     start.setHours(0, 0, 0, 0);
 
-    const nextDayOfEnd = new Date(endDate);
-    nextDayOfEnd.setHours(0, 0, 0, 0);
-    nextDayOfEnd.setDate(nextDayOfEnd.getDate() + 1);
+    const end = new Date(targetDate);
+    end.setHours(23, 59, 59, 999);
 
     return prisma.shoppingList.findMany({
         where: {
             userId,
             date: {
                 gte: start,
-                lt: nextDayOfEnd,
+                lte: end,
             },
         },
         orderBy: {
-            date: "asc",
+            id: "asc", // 👈 먼저 등록한 게 위로 올라오도록 수정
         },
     });
 };
@@ -29,7 +28,7 @@ const createItem = async (itemData: ShoppingListInputType, userId: number) => {
         data: {
             memo: itemData.memo,
             date: new Date(itemData.date),
-            isChecked: itemData.isChecked ?? false,
+            isChecked: false,
             user: { connect: { id: userId } },
         },
     });
@@ -44,7 +43,7 @@ const updateItem = async (userId: number, itemId: number, input: ShoppingListInp
     });
 
     if (!item) {
-        return null;
+        throw new Error("NOT_FOUND_ITEM"); // 👈 낫파운드 에러 처리 적용 완료
     }
 
     return prisma.shoppingList.update({

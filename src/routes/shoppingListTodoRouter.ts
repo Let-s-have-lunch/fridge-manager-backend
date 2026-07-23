@@ -12,7 +12,8 @@ router.post(
     validate(shoppingListTodoSchema),
     shoppingListTodoController.createItem,
 );
-// 팀장님 주문 5번: get방식(조회) >> 주단위로 (펫 헬스 앱의 /list 대신 주 단위 범용 조회 사용)
+
+// 🌟 팀장님 주문 반영: get방식(조회) >> 달력에서 선택한 "날짜 하루(date)" 기준으로 조회
 router.get("/", authenticate, shoppingListTodoController.getItems);
 router.patch(
     "/:id",

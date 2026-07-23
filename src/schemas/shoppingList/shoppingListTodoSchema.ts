@@ -7,9 +7,6 @@ export const shoppingListTodoSchema = z.object({
 
     // 2. 날짜 (필수) - 문자열로 들어와도 Date 객체로 자동 변환
     date: z.coerce.date(),
-
-    // 3. 체크박스 상태 (선택) - 수정할 때 완료/미완료 처리를 위해 남겨둠
-    isChecked: z.boolean().optional(),
 });
 
 // 컨트롤러에서 타입으로 사용할 수 있게 내보내기
