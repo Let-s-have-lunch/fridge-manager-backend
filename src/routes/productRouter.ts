@@ -10,8 +10,7 @@ const router = Router();
 // 냉장고 안의 제품 목록 조회
 router.get("/fridge/:fridgeId", authenticate,productController.getProductList);
 
-// 유저별 제품 통계
-router.get("/statistics", authenticate, productController.getUserStatistics);
+
 
 // 냉장고에 새 제품 등록 (URL에 create를 빼고 POST 메서드로 생성의 의미를 전달합니다)
 router.post(

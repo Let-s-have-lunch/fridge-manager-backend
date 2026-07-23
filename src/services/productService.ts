@@ -1,7 +1,12 @@
 import prisma from "../config/prisma.ts";
 import { ProductInputType } from "../schemas/productSchema.ts";
 
-const getProductList = async (userId: number, fridgeId: number, sort?: string, keyword?: string) => {
+const getProductList = async (
+    userId: number,
+    fridgeId: number,
+    sort?: string,
+    keyword?: string,
+) => {
     // 기본 정렬 기준 (최근 생성한게 위로 올라오게)
     let orderByCondition: any = { createdAt: "desc" };
 
@@ -29,100 +34,6 @@ const getProductList = async (userId: number, fridgeId: number, sort?: string, k
 };
 
 
-const getUserStatistics = async (userId: number, year: number, month: number) => {
-    // 1. 해당 월의 시작일과 다음 월의 시작일 계산 (예: 7월이면 7월 1일 ~ 8월 1일 직전까지)
-    const startDate = new Date(year, month - 1, 1);
-    const endDate = new Date(year, month, 1);
-
-    // 2. 소비 / 폐기 통계 (선택한 달에 업데이트된 데이터만 가져오기)
-    const consumedCount = await prisma.product.count({
-        where: {
-            // 1. "Product의 부모인 fridge 테이블을 봐!
-            // 그 fridge의 주인(userId)이 지금 요청한 유저(userId)인 것들만 찾아."
-            fridge: { userId: userId },
-
-            // 2. "그렇게 찾은 내 냉장고 속 제품들 중에서,
-            // 상태가 '다 먹음(CONSUMED)'인 것들만 추려내고,"
-            status: "CONSUMED",
-
-            // 3. "그 다 먹은 날짜(updatedAt)가 '이번 달' 안에 속하는 것들만"
-            updatedAt: { gte: startDate, lt: endDate }, // startDate 이상, endDate 미만
-        },
-    });
-
-    const discardedCount = await prisma.product.count({
-        where: {
-            fridge: { userId: userId },
-            status: "DISCARDED",
-            updatedAt: { gte: startDate, lt: endDate },
-        },
-    });
-
-    // 3. 자주 소비하는 Top 3 (선택한 달 기준)
-    const topConsumed = await prisma.product.groupBy({
-        by: ["name"],
-        where: {
-            // 🚨 주의: groupBy를 사용할 때는 직접 관계 쿼리(fridge: {...})를 쓸 수 없습니다!
-            // 따라서 냉장고 테이블에서 해당 유저의 냉장고 ID들을 먼저 찾아와야 합니다.
-            fridgeId: {
-                in: (
-                    await prisma.fridge.findMany({
-                        where: { userId: userId },
-                        select: { id: true },
-                    })
-                ).map(f => f.id),
-            },
-            status: "CONSUMED",
-            updatedAt: { gte: startDate, lt: endDate },
-        },
-        _count: { name: true },
-        // 👇 orderBy를 배열로 만들어서 1순위, 2순위 조건을 줍니다!
-        orderBy: [
-            { _count: { name: "desc" } }, // 1순위: 소비 개수가 많은 순 (내림차순)
-            { name: "desc" }, // 2순위: 개수가 같다면 이름순 (내림차순)
-        ],
-        take: 3,
-    });
-
-    // 4. 유통기한 카드 (이 부분은 달력 선택과 무관하게 항상 '오늘'을 기준으로 경고해주는 용도)
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    // 2. 임박 기준인 '3일 뒤'도 똑같이 세팅합니다.
-    const threeDaysLater = new Date(today);
-    threeDaysLater.setDate(today.getDate() + 3);
-
-    // 3. 기한 지남 (Expired)
-    // 오늘 자정(00:00:00)보다 작음 == "어제 또는 그 이전 날짜"
-    const expiredProducts = await prisma.product.findMany({
-        where: {
-            fridge: { userId: userId },
-            status: "STORED",
-            expirationDate: { lt: today },
-        },
-    });
-
-    // 4. 기한 임박 (Expiring Soon)
-    // 오늘 자정(00:00:00)보다 크거나 같고, 3일 뒤보다 작거나 같음
-    // == "오늘 기한인 상품도 여기에 안전하게 포함됨! (D-Day)"
-    const expiringSoonProducts = await prisma.product.findMany({
-        where: {
-            fridge: { userId: userId },
-            status: "STORED",
-            expirationDate: { gte: today, lte: threeDaysLater },
-        },
-    });
-
-    return {
-        targetMonth: `${year}-${month}`, // 현재 조회된 기준 월을 프론트엔드에 확인용으로 내려줌
-        chartData: { consumed: consumedCount, discarded: discardedCount },
-        cards: {
-            expired: expiredProducts,
-            expiringSoon: expiringSoonProducts,
-        },
-        top3: topConsumed.map(item => ({ name: item.name, count: item._count.name })),
-    };
-};
 
 const getProductById = async (userId: number, productId: number) => {
     const product = await prisma.product.findFirst({
@@ -152,6 +63,7 @@ const createProduct = async (userId: number, fridgeId: number, data: ProductInpu
             storageType: data.storageType,
             quantity: data.quantity,
             unit: data.unit,
+            price: data.price ?? null,
             expirationDate: data.expirationDate,
             addMethod: data.addMethod,
             memo: data.memo ?? null,
@@ -172,6 +84,7 @@ const updateProduct = async (userId: number, productId: number, data: ProductInp
             storageType: data.storageType,
             quantity: data.quantity,
             unit: data.unit,
+            price: data.price ?? null,
             expirationDate: data.expirationDate,
             status: data.status,
             memo: data.memo ?? null,
@@ -243,7 +156,6 @@ const createProductsByReceipt = async (
 
 export default {
     getProductList,
-    getUserStatistics,
     getProductById,
     createProduct,
     updateProduct,

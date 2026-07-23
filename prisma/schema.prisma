@@ -108,6 +108,7 @@ model Product {
   storageType    StorageType   @map("storage_type")
   quantity       Float
   unit           Unit
+  price          Int?
   expirationDate DateTime      @map("expiration_date")
   status         ProductStatus @default(STORED)
 
