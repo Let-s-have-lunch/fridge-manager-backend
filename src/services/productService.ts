@@ -17,19 +17,40 @@ const getProductList = async (
         orderByCondition = { categoryId: "asc" };
     }
 
-    return prisma.product.findMany({
+    // 1. DB에서 전체 제품 목록 조회
+    // 냉장, 냉동, 상온별로
+    const products = await prisma.product.findMany({
         where: {
             fridgeId: fridgeId,
-            // 💡 이 냉장고가 내 것인지 확인! (이거 한 줄만 추가하면 완벽 방어됩니다)
             fridge: { userId: userId },
             status: "STORED",
-            // (keyword가 있을 때만 name 속성을 객체에 추가합니다)
             ...(keyword && { name: { contains: keyword } }),
         },
         orderBy: orderByCondition,
         include: {
             category: true,
         },
+    });
+
+    // 2. 디데이(D-Day) 계산 로직
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return products.map(product => {
+        let dDay = null;
+
+        if (product.expirationDate) {
+            const expireDate = new Date(product.expirationDate);
+            expireDate.setHours(0, 0, 0, 0);
+
+            const diffTime = expireDate.getTime() - today.getTime();
+            dDay = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        }
+
+        return {
+            ...product,
+            dDay,
+        };
     });
 };
 
