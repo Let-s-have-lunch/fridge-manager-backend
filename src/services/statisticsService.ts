@@ -41,19 +41,34 @@ const getDashboardData = async (
         totalItems > 0 ? Math.round((count / totalItems) * 100) : 0;
 
     // 2. 만료 임박 / 지남
-    const expiredCount = await prisma.product.count({
+    const expiredProducts = await prisma.product.findMany({
         where: { fridgeId: { in: fridgeIds }, status: "STORED", expirationDate: { lt: today } },
+        select: {
+            id: true,
+            name: true,
+            expirationDate: true,
+            category: { select: { icon: true } } // 모달 리스트에 아이콘을 표시하기 위해 포함
+        },
+        orderBy: { expirationDate: "asc" }, // 기한이 많이 지난 순으로 정렬
     });
-    const expiringSoonCount = await prisma.product.count({
+
+    const expiringSoonProducts = await prisma.product.findMany({
         where: {
             fridgeId: { in: fridgeIds },
             status: "STORED",
             expirationDate: { gte: today, lte: threeDaysLater },
         },
+        select: {
+            id: true,
+            name: true,
+            expirationDate: true,
+            category: { select: { icon: true } }
+        },
+        orderBy: { expirationDate: "asc" }, // 가장 임박한 순으로 정렬
     });
 
-    // 3. TOP 3
-    const topConsumed = await prisma.product.groupBy({
+    // 3. TOP 3 (카테고리 아이콘 포함해서 가져오기)
+    const topConsumedGroups = await prisma.product.groupBy({
         by: ["name"],
         where: {
             fridgeId: { in: fridgeIds },
@@ -66,6 +81,30 @@ const getDashboardData = async (
         take: 3,
     });
 
+    // 각 TOP 3 제품의 '카테고리 아이콘'을 알아내기 위해 실제 Product 데이터를 하나씩 찾아 매핑합니다.
+    const top3Products = await Promise.all(
+        topConsumedGroups.map(async (item) => {
+            // 해당 이름의 소비된 제품 중 하나를 찾아 카테고리 정보를 포함하여 가져옴
+            const sampleProduct = await prisma.product.findFirst({
+                where: {
+                    fridgeId: { in: fridgeIds },
+                    status: "CONSUMED",
+                    name: item.name,
+                },
+                include: {
+                    category: true, // 👈 카테고리 통째로 조인!
+                },
+            });
+
+            return {
+                name: item.name,
+                useCount: item._count.name,
+                totalPrice: item._sum.price || 0,
+                icon: sampleProduct?.category?.icon || "shopping-bag", // 👈 카테고리에 저장된 아이콘 이름 추출! (없으면 기본값)
+            };
+        })
+    );
+
     return {
         dashboardResponse: {
             totalConsumedPrice,
@@ -74,12 +113,24 @@ const getDashboardData = async (
                 discarded: getPercent(discardedCount),
                 others: getPercent(storedCount),
             },
-            expirationCards: { expired: expiredCount, expiringSoon: expiringSoonCount },
-            top3Products: topConsumed.map(item => ({
-                name: item.name,
-                useCount: item._count.name,
-                totalPrice: item._sum.price || 0,
-            })),
+            expirationCards: {
+                expired: expiredProducts.length, // 기존 UI용 개수
+                expiringSoon: expiringSoonProducts.length, // 기존 UI용 개수
+                // 모달에 넘겨줄 상세 리스트 (데이터 다듬기)
+                expiredList: expiredProducts.map(p => ({
+                    id: p.id,
+                    name: p.name,
+                    expirationDate: p.expirationDate,
+                    icon: p.category?.icon || "dots-horizontal", // 아이콘 없으면 기본값
+                })),
+                expiringSoonList: expiringSoonProducts.map(p => ({
+                    id: p.id,
+                    name: p.name,
+                    expirationDate: p.expirationDate,
+                    icon: p.category?.icon || "dots-horizontal",
+                })),
+            },
+            top3Products: top3Products,
         },
     };
 };
