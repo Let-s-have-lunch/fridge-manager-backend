@@ -1,5 +1,5 @@
-import prisma from "../utils/prisma.ts";
 import { ShoppingListInputType } from "../schemas/shoppingList/shoppingListTodoSchema.ts";
+import prisma from "../config/prisma.ts";
 
 // 🌟 하루 단위 조회 (특정 날짜 하루를 쿼리로 받아 조회, id 기준 오름차순 정렬)
 const getItems = async (userId: number, targetDate: Date) => {
