@@ -8,6 +8,7 @@ import adminRouter from "./routes/admin/adminRouter.ts";
 import userRouter from "./routes/userRouter.ts";
 import noticeRouter from "./routes/noticeRouter.ts";
 import statisticsRouter from "./routes/statisticsRouter.ts";
+import shoppingListTodoRouter from "./routes/shoppingListTodoRouter.ts";
 
 dotenv.config();
 
@@ -32,6 +33,7 @@ app.use("/users", userRouter);
 app.use("/notices", noticeRouter);
 app.use("/admin", adminRouter);
 app.use("/statistics", statisticsRouter);
+app.use("/shopping-list", shoppingListTodoRouter);
 
 app.listen(PORT, () => {
     console.log(`서버 실행됨! http://localhost:${PORT}`);
