@@ -1,5 +1,5 @@
 import { AuthRequest } from "../middlewares/auth.ts";
-import {Request, Response} from "express";
+import { NextFunction, Request, Response } from "express";
 import { UserCreateInput } from "../generated/prisma/models/User.ts";
 import passwordUtil from "../utils/password/passwordUtil.ts";
 import { LoginInputType } from "../schemas/user/login.ts";
@@ -22,8 +22,7 @@ const getMe = async (req: AuthRequest, res: Response) => {
 
 const createUser = async (req: Request, res: Response) => {
     try {
-        const { nickname, password, email, birthdate } =
-            req.body;
+        const { nickname, password, email, birthdate } = req.body;
 
         const userData: UserCreateInput = {
             password: await passwordUtil.hashPassword(password),
@@ -74,6 +73,20 @@ const login = async (req: Request, res: Response) => {
 
         console.log(error);
         res.status(500).json({ message: "로그인 처리 중 서버 에러가 발생했습니다." });
+    }
+};
+
+// 💡 추가된 로그아웃 컨트롤러 함수
+const logout = async (req: AuthRequest, res: Response) => {
+    try {
+        // 만약 서버 측에서 토큰 블랙리스트 관리나 세션 파기 로직이 있다면 여기에 작성합니다.
+        // 일반적인 JWT 방식이라면 클라이언트가 토큰을 지우도록 성공 응답만 보내주어도 충분합니다.
+        res.status(200).json({
+            message: "성공적으로 로그아웃되었습니다.",
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "로그아웃 처리 중 서버 에러가 발생했습니다." });
     }
 };
 
@@ -145,6 +158,19 @@ const updatePassword = async (req: AuthRequest, res: Response) => {
     }
 };
 
+const resetPassword = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { email, newPassword } = req.body;
+        await userService.resetPassword(email, newPassword);
+        res.status(200).json({
+            success: true,
+            message: "비밀번호가 성공적으로 변경되었습니다.",
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 const withdrawUser = async (req: AuthRequest, res: Response) => {
     try {
         if (!req.user) {
@@ -179,6 +205,13 @@ const withdrawUser = async (req: AuthRequest, res: Response) => {
     }
 };
 
-
-
-export default { getMe, createUser, login, updateUser, updatePassword, withdrawUser };
+export default {
+    getMe,
+    createUser,
+    login,
+    logout,
+    updateUser,
+    updatePassword,
+    withdrawUser,
+    resetPassword,
+};

@@ -1,15 +1,19 @@
 import prisma from "../config/prisma.ts";
 
-const getFridgeList = async () => {
+const getFridgeList = async (userId: number) => {
     return prisma.fridge.findMany({
-        where: { deletedAt: null },
+        where: {
+            userId,
+            deletedAt: null,
+        },
         orderBy: { id: "asc" },
     });
 };
 
-const createFridge = async (name: string) => {
+const createFridge = async (userId: number, name: string) => {
     const existingFridge = await prisma.fridge.findFirst({
         where: {
+            userId,
             name: name,
             deletedAt: null,
         },
@@ -21,26 +25,34 @@ const createFridge = async (name: string) => {
 
     return prisma.fridge.create({
         data: {
+            userId,
             name,
         },
     });
 };
 
-// 3. 냉장고 수정 (존재 여부 및 내 아이디를 제외한 이름 중복 체크)
-const updateFridge = async (id: number, name: string) => {
-    const fridge = await prisma.fridge.findUnique({
-        where: { id },
+// 3. 냉장고 수정 (내 냉장고 존재 여부 확인 및 본인 냉장고 내 중복 체크)
+const updateFridge = async (userId: number, id: number, name: string) => {
+    // 내 냉장고인지 권한 및 존재 여부 검사
+    const fridge = await prisma.fridge.findFirst({
+        where: {
+            id,
+            userId,
+            deletedAt: null,
+        },
     });
 
-    if (!fridge || fridge.deletedAt !== null) {
+    if (!fridge) {
         throw new Error("NOT_FOUND_FRIDGE");
     }
 
+    // 변경하려는 이름이 내 다른 냉장고와 중복되는지 검사
     const existingFridge = await prisma.fridge.findFirst({
         where: {
+            userId,
             name: name,
             deletedAt: null,
-            id: { not: id }, // 자기 자신은 중복 체크에서 제외
+            id: { not: id }, // 자기 자신은 제외
         },
     });
 
@@ -56,10 +68,11 @@ const updateFridge = async (id: number, name: string) => {
     });
 };
 
-const deleteFridge = async (id: number) => {
+const deleteFridge = async (userId: number, id: number) => {
     const fridge = await prisma.fridge.findFirst({
         where: {
             id,
+            userId,
             deletedAt: null,
         },
     });

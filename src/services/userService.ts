@@ -6,7 +6,6 @@ import passwordUtil from "../utils/password/passwordUtil.ts";
 import jwtUtil from "../utils/jwt/jwtUtil.ts";
 import { UpdateUserInputType } from "../schemas/user/updateUserSchema.ts";
 
-
 const getUserById = async (id: number) => {
     const user = await prisma.user.findUnique({
         where: {
@@ -95,13 +94,31 @@ const updateUser = async (userId: number, input: UpdateUserInputType) => {
         }
     }
 
+    // 생년월일 문자열("20020507" 등)을 Prisma DateTime 타입에 맞는 Date 객체로 변환
+    let formattedBirthdate = undefined;
+    if (input.birthdate !== undefined) {
+        if (input.birthdate) {
+            const birthStr = String(input.birthdate);
+            if (birthStr.length === 8) {
+                const year = birthStr.slice(0, 4);
+                const month = birthStr.slice(4, 6);
+                const day = birthStr.slice(6, 8);
+                formattedBirthdate = new Date(`${year}-${month}-${day}T00:00:00.000Z`);
+            } else {
+                formattedBirthdate = new Date(birthStr);
+            }
+        } else {
+            formattedBirthdate = null;
+        }
+    }
+
     return prisma.user.update({
         where: {
             id: userId,
         },
         data: {
-            nickname: input.nickname,
-            birthdate: input.birthdate ?? null,
+            ...(input.nickname !== undefined && { nickname: input.nickname }),
+            ...(formattedBirthdate !== undefined && { birthdate: formattedBirthdate }),
         },
     });
 };
@@ -133,6 +150,23 @@ const updatePassword = async (userId: number, prevPw: string, pw: string) => {
     });
 };
 
+const resetPassword = async (email: string, newPw: string) => {
+    const user = await prisma.user.findUnique({
+        where: { email, deletedAt: null },
+    });
+
+    if (!user) {
+        throw new Error("USER_NOT_FOUND");
+    }
+
+    const hashedPassword = await passwordUtil.hashPassword(newPw);
+
+    await prisma.user.update({
+        where: { id: user.id },
+        data: { password: hashedPassword },
+    });
+};
+
 const withdrawUser = async (userId: number, password: string) => {
     const existUser = await prisma.user.findFirst({
         where: {
@@ -160,7 +194,12 @@ const withdrawUser = async (userId: number, password: string) => {
     });
 };
 
-
-
-
-export default { createUser, login, updateUser, updatePassword, withdrawUser, getUserById };
+export default {
+    createUser,
+    login,
+    updateUser,
+    updatePassword,
+    withdrawUser,
+    getUserById,
+    resetPassword,
+};

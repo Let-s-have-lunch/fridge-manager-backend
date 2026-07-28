@@ -20,6 +20,8 @@ router.patch(
     validate(updatePasswordSchema),
     userController.updatePassword,
 );
+router.post("/logout", authenticate, userController.logout);
+router.post("/password-reset", userController.resetPassword);
 router.patch("/withdraw", authenticate, validate(withdrawUserSchema), userController.withdrawUser);
 
 export default router;
