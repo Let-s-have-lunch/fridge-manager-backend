@@ -24,14 +24,22 @@ const createUser = async (req: Request, res: Response) => {
     try {
         const { nickname, password, email, birthdate } = req.body;
 
+        const parsedBirthdate =
+            birthdate && birthdate !== ""
+                ? new Date(
+                      `${birthdate.slice(0, 4)}-${birthdate.slice(4, 6)}-${birthdate.slice(6, 8)}`,
+                  )
+                : null;
+
         const userData: UserCreateInput = {
             password: await passwordUtil.hashPassword(password),
             nickname,
             email,
-            birthdate: birthdate ? new Date(birthdate) : null,
+            birthdate: parsedBirthdate,
         };
 
         const newUser = await userService.createUser(userData);
+        
         res.status(201).json({ message: "성공적으로 회원가입 되었습니다.", data: newUser });
     } catch (error) {
         if (error instanceof Error) {
