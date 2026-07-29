@@ -25,8 +25,6 @@ const createUser = async (data: UserCreateInput) => {
             data,
         });
     } catch (error) {
-        console.error("🚨 [createUser] 원본 에러:", error);
-
         if (error instanceof Prisma.PrismaClientKnownRequestError) {
             if (error.code === "P2002") {
                 const errorMessage = error.message;
@@ -36,13 +34,10 @@ const createUser = async (data: UserCreateInput) => {
                 if (errorMessage.includes("nickname")) {
                     throw new Error("ALREADY_EXISTS_NICKNAME");
                 }
-                console.error(
-                    "🚨 [createUser] P2002 에러지만 email/nickname이 아님:",
-                    errorMessage,
-                );
                 throw new Error("UNKNOWN_ERROR");
             }
         }
+
         throw new Error("UNKNOWN_ERROR");
     }
 };

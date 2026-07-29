@@ -28,11 +28,10 @@ const createUser = async (req: Request, res: Response) => {
             password: await passwordUtil.hashPassword(password),
             nickname,
             email,
-            birthdate,
+            birthdate: birthdate ? new Date(birthdate) : null,
         };
 
         const newUser = await userService.createUser(userData);
-        
         res.status(201).json({ message: "성공적으로 회원가입 되었습니다.", data: newUser });
     } catch (error) {
         if (error instanceof Error) {
