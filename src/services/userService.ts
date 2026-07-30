@@ -94,31 +94,13 @@ const updateUser = async (userId: number, input: UpdateUserInputType) => {
         }
     }
 
-    // 생년월일 문자열("20020507" 등)을 Prisma DateTime 타입에 맞는 Date 객체로 변환
-    let formattedBirthdate = undefined;
-    if (input.birthdate !== undefined) {
-        if (input.birthdate) {
-            const birthStr = String(input.birthdate);
-            if (birthStr.length === 8) {
-                const year = birthStr.slice(0, 4);
-                const month = birthStr.slice(4, 6);
-                const day = birthStr.slice(6, 8);
-                formattedBirthdate = new Date(`${year}-${month}-${day}T00:00:00.000Z`);
-            } else {
-                formattedBirthdate = new Date(birthStr);
-            }
-        } else {
-            formattedBirthdate = null;
-        }
-    }
-
     return prisma.user.update({
         where: {
             id: userId,
         },
         data: {
-            ...(input.nickname !== undefined && { nickname: input.nickname }),
-            ...(formattedBirthdate !== undefined && { birthdate: formattedBirthdate }),
+            nickname: input.nickname,
+            birthdate: input.birthdate ?? null,
         },
     });
 };
