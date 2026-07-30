@@ -42,7 +42,11 @@ const getDashboardData = async (
 
     // 2. 만료 임박 / 지남
     const expiredProducts = await prisma.product.findMany({
-        where: { fridgeId: { in: fridgeIds }, status: "STORED", expirationDate: { lt: today } },
+        where: { fridgeId: { in: fridgeIds }, status: "STORED", AND: [
+                { expirationDate: { gte: thisMonthStart } }, // 💡 핵심: 선택한 달의 1일 이후
+                { expirationDate: { lt: thisMonthEnd } },    // 💡 핵심: 선택한 달의 마지막 날 이전
+                { expirationDate: { lt: today } }            // 기존: 오늘 날짜보다 과거 (지남)
+            ] },
         select: {
             id: true,
             name: true,
@@ -56,13 +60,18 @@ const getDashboardData = async (
         where: {
             fridgeId: { in: fridgeIds },
             status: "STORED",
-            expirationDate: { gte: today, lte: threeDaysLater },
+            AND: [
+                { expirationDate: { gte: thisMonthStart } }, // 💡 핵심: 선택한 달의 1일 이후
+                { expirationDate: { lt: thisMonthEnd } }, // 💡 핵심: 선택한 달의 마지막 날 이전
+                { expirationDate: { gte: today } }, // 기존: 오늘 날짜 이후
+                { expirationDate: { lte: threeDaysLater } }, // 기존: 오늘부터 3일 이내 (임박)
+            ],
         },
         select: {
             id: true,
             name: true,
             expirationDate: true,
-            category: { select: { icon: true } }
+            category: { select: { icon: true } },
         },
         orderBy: { expirationDate: "asc" }, // 가장 임박한 순으로 정렬
     });
