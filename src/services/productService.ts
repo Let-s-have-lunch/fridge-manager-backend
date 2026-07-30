@@ -1,22 +1,7 @@
 import prisma from "../config/prisma.ts";
 import { ProductInputType } from "../schemas/productSchema.ts";
 
-const getProductList = async (
-    userId: number,
-    fridgeId: number,
-    sort?: string,
-    keyword?: string,
-) => {
-    // 기본 정렬 기준 (최근 생성한게 위로 올라오게)
-    let orderByCondition: any = { createdAt: "desc" };
-
-    // 정렬 기준이 있을때
-    if (sort === "expire") {
-        orderByCondition = { expirationDate: "asc" };
-    } else if (sort === "category") {
-        orderByCondition = { categoryId: "asc" };
-    }
-
+const getProductList = async (userId: number, fridgeId: number) => {
     // 📢 [프론트엔드 팀원분들 필독!] 📢
     // 홈 화면의 탭(전체/냉장/냉동/실온)을 누를 때마다 API를 매번 호출하면 서버와 앱 모두 비효율적입니다.
     // 따라서 백엔드에서는 storageType(보관방식) 필터링 없이 해당 냉장고의 '전체' 제품 목록을 한 번에 내려줍니다.
@@ -24,44 +9,50 @@ const getProductList = async (
     // 탭을 전환할 때마다 자바스크립트의 .filter() 메서드를 사용해(ex: item.storageType === 'REFRIGERATED')
     // 조건에 맞는 데이터만 화면에 렌더링하는 방식으로 구현해 주세요!
 
-    // 1. DB에서 전체 제품 목록 조회
-    // 냉장, 냉동, 상온별로
     const products = await prisma.product.findMany({
         where: {
-            fridgeId: fridgeId,
-            fridge: { userId: userId },
+            fridgeId,
             status: "STORED",
-            ...(keyword && { name: { contains: keyword } }),
+            fridge: {
+                userId,
+            },
         },
-        orderBy: orderByCondition,
+
         include: {
             category: true,
         },
+
+        orderBy: {
+            createdAt: "desc",
+        },
     });
 
-    // 2. 디데이(D-Day) 계산 로직
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     return products.map(product => {
-        let dDay = null;
-
-        if (product.expirationDate) {
-            const expireDate = new Date(product.expirationDate);
-            expireDate.setHours(0, 0, 0, 0);
-
-            const diffTime = expireDate.getTime() - today.getTime();
-            dDay = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        }
+        const expireDate = new Date(product.expirationDate);
+        expireDate.setHours(0, 0, 0, 0);
+        const dDay = Math.ceil((expireDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
         return {
-            ...product,
+            id: product.id,
+            name: product.name,
+            memo: product.memo,
+            quantity: product.quantity,
+            unit: product.unit,
+            storageType: product.storageType,
+            expirationDate: product.expirationDate,
+            createdAt: product.createdAt,
             dDay,
+            category: {
+                id: product.category.id,
+                name: product.category.name,
+           icon: product.category.icon,
+            },
         };
     });
 };
-
-
 
 const getProductById = async (userId: number, productId: number) => {
     const product = await prisma.product.findFirst({
