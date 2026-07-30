@@ -51,8 +51,8 @@ model User {
   birthdate DateTime?
   role      RoleType  @default(USER)
 
-  categories Category[]
-  fridges    Fridge[]
+  categories    Category[]
+  fridges       Fridge[]
   shoppingLists ShoppingList[]
 }
 
