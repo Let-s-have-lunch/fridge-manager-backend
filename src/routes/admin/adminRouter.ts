@@ -3,6 +3,7 @@ import { authenticate, requiredAdmin } from "../../middlewares/auth.ts";
 import adminNoticeRouter from "../adminNoticeRouter.ts";
 import adminUserRouter from "./user/adminUserRouter.ts";
 import adminDashboardController from "../../controllers/admin/adminDashboardController.ts";
+import adminInquiryRouter from "./inquiry/adminInquiryRouter.ts";
 
 const router = Router();
 
@@ -12,6 +13,8 @@ router.use(requiredAdmin);
 
 router.use("/notice", adminNoticeRouter);
 router.use("/user", adminUserRouter);
+router.use("/inquiry", adminInquiryRouter);
+
 
 router.get("/summary", adminDashboardController.getDashboardSummary);
 
