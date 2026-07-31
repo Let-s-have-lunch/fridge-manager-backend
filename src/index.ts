@@ -9,6 +9,7 @@ import userRouter from "./routes/userRouter.ts";
 import noticeRouter from "./routes/noticeRouter.ts";
 import statisticsRouter from "./routes/statisticsRouter.ts";
 import shoppingListTodoRouter from "./routes/shoppingListTodoRouter.ts";
+import inquiryRouter from "./routes/inquiryRouter.ts";
 
 dotenv.config();
 
@@ -31,6 +32,7 @@ app.use("/products", productRouter);
 app.use("/categories", categoryRouter);
 app.use("/users", userRouter);
 app.use("/notices", noticeRouter);
+app.use("/inquiries", inquiryRouter);
 app.use("/admin", adminRouter);
 app.use("/statistics", statisticsRouter);
 app.use("/shopping-list", shoppingListTodoRouter);
