@@ -35,20 +35,22 @@ const getProductList = async (userId: number, fridgeId: number) => {
         expireDate.setHours(0, 0, 0, 0);
         const dDay = Math.ceil((expireDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
+        const { id, name, memo, quantity, unit, storageType, expirationDate, createdAt, category } =
+            product;
         return {
-            id: product.id,
-            name: product.name,
-            memo: product.memo,
-            quantity: product.quantity,
-            unit: product.unit,
-            storageType: product.storageType,
-            expirationDate: product.expirationDate,
-            createdAt: product.createdAt,
+            id,
+            name,
+            memo,
+            quantity,
+            unit,
+            storageType,
+            expirationDate,
+            createdAt,
             dDay,
             category: {
-                id: product.category.id,
-                name: product.category.name,
-           icon: product.category.icon,
+                id: category.id,
+                name: category.name,
+                icon: category.icon,
             },
         };
     });
@@ -56,7 +58,7 @@ const getProductList = async (userId: number, fridgeId: number) => {
 
 const getProductById = async (userId: number, productId: number) => {
     const product = await prisma.product.findFirst({
-        where: { id: productId, fridge: { userId: userId } },
+        where: { id: productId, fridge: { userId } },
         include: { category: true }, // 상세 조회 시 카테고리 정보도 같이 넘겨줍니다
     });
 
@@ -128,23 +130,27 @@ const createProductsByReceipt = async (
 ) => {
     // 💡 1. 영수증을 등록하려는 냉장고가 내 냉장고가 맞는지 먼저 검증!
     const targetFridge = await prisma.fridge.findFirst({
-        where: { id: fridgeId, userId: userId },
+        where: { id: fridgeId, userId },
     });
-    if (!targetFridge) throw new Error("UNAUTHORIZED_ACCESS");
+    if (!targetFridge) throw new Error("냉장고 접근 권한이 없습니다.");
 
     // [TODO] 실제 OCR 연동 시 아래 주석 해제 및 적용
     // const ocrResult = await callNaverOcrApi(imageFile.buffer);
     // 실제로 ocrResult에 객체 형태의 복잡한 데이터가 저장이 된다.
     // 거기서 '상품 목록' 배열이 있는 위치까지 찾아들어가서 아래의 parsedItems에 저장을 한다.!
 
-    // 임시 모의 데이터 (OCR이 아래처럼 텍스트를 추출했다고 가정)
+    // 2. OCR (현재는 더미 데이터)
     const parsedItems = [
         { name: "서울우유 1L", quantity: 1, unit: "L" },
         { name: "양파 1망", quantity: 1, unit: "EA" },
         { name: "돼지고기 삼겹살", quantity: 600, unit: "G" },
     ];
 
-    // DB 저장을 위한 데이터 맵핑
+    // TODO
+    // const ocrResult = await callNaverOcrApi(imageFile.buffer);
+    // const parsedItems = parseReceipt(ocrResult);
+
+    // 3. DB 저장
     const productsToCreate = parsedItems.map(item => ({
         fridgeId: fridgeId,
         categoryId: 9, // ect 카테고리 id

@@ -9,7 +9,7 @@ export const productSchema = z.object({
     memo: z.string().max(100, "메모는 100자 이내로 입력해주세요.").optional(),
     categoryId: z.number().int().positive("유효한 카테고리를 선택해주세요."),
     storageType: z.enum(["REFRIGERATED", "FROZEN", "ROOM_TEMP"]),
-    quantity: z.number().positive("수량은 0보다 커야 합니다."),
+    quantity: z.number().int().positive("수량은 0보다 커야 합니다."),
     unit: z.enum(["EA", "G", "KG", "ML", "L"]),
     price: z.number().int().nonnegative("가격은 0 이상이어야 합니다.").optional(), // 💡 일반 사용자도 가격 입력 가능!
     expirationDate: z.string().transform(str => new Date(str)),
