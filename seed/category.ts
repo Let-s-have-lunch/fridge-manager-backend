@@ -12,21 +12,21 @@ import prisma from "../src/config/prisma.ts";
 
 
 const initialCategories = [
-    { id: 1, name: "채소류", icon: "carrot" },
-    { id: 2, name: "과일류", icon: "fruit-cherries" },
-    { id: 3, name: "육류/해산물", icon: "food-steak" },
-    { id: 4, name: "유제품", icon: "cheese" },
-    { id: 5, name: "가공식품", icon: "food-hot-dog" },
-    { id: 6, name: "양념/소스류", icon: "shaker-outline" },
-    { id: 7, name: "반찬류/조리된 음식", icon: "pot-steam" },
-    { id: 8, name: "음료", icon: "cup-water" },
-    { id: 9, name: "빵/베이커리류", icon: "bread-slice" },
-    { id: 10, name: "간식/과자류", icon: "candy-outline" },
-    { id: 11, name: "건강/다이어트식", icon: "leaf" },
+    { id: 1, name: "채소류", icon: "vegetable" },
+    { id: 2, name: "과일류", icon: "fruit" },
+    { id: 3, name: "육류/해산물", icon: "meat" },
+    { id: 4, name: "유제품", icon: "milk" },
+    { id: 5, name: "가공식품", icon: "processed_food" },
+    { id: 6, name: "양념/소스류", icon: "source" },
+    { id: 7, name: "반찬류/조리된 음식", icon: "dish" },
+    { id: 8, name: "음료", icon: "juice" },
+    { id: 9, name: "빵/베이커리류", icon: "bread" },
+    { id: 10, name: "간식/과자류", icon: "snack" },
+    { id: 11, name: "건강/다이어트식", icon: "salad" },
     { id: 12, name: "약품/영양제", icon: "pill" }, // 💡 약품 추가
-    { id: 13, name: "화장품", icon: "lotion" }, // 💡 화장품 추가
-    { id: 14, name: "유아/이유식", icon: "baby-bottle-outline" }, // 💡 아기 용품
-    { id: 15, name: "기타", icon: "dots-horizontal" }, // 💡 맨 마지막 기타
+    { id: 13, name: "화장품", icon: "cosmetics" }, // 💡 화장품 추가
+    { id: 14, name: "유아/이유식", icon: "baby_food" }, // 💡 아기 용품
+    { id: 15, name: "기타", icon: "tag" }, // 💡 맨 마지막 기타
 ];
 
 async function main() {
