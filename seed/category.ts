@@ -1,7 +1,7 @@
 import prisma from "../src/config/prisma.ts";
 
 // 🌱 기본 9개의 공통 카테고리를 DB에 세팅(Seeding)합니다.
-// 아래에 생성한 9개의 카테고리는 isDefault = true (관리자 제공 기본 카테고리)로 생성되며,
+// 아래에 생성한 15개의 카테고리는 isDefault = true (관리자 제공 기본 카테고리)로 생성되며,
 // 사용자가 앱에서 직접 추가하는 커스텀 카테고리는 isDefault = false 로 저장됩니다.
 
 // 💡 [프론트엔드 사용 가이드]
@@ -17,7 +17,7 @@ const initialCategories = [
     { id: 3, name: "육류/해산물", icon: "meat" },
     { id: 4, name: "유제품", icon: "milk" },
     { id: 5, name: "가공식품", icon: "processed_food" },
-    { id: 6, name: "양념/소스류", icon: "source" },
+    { id: 6, name: "양념/소스류", icon: "sauce" },
     { id: 7, name: "반찬류/조리된 음식", icon: "dish" },
     { id: 8, name: "음료", icon: "juice" },
     { id: 9, name: "빵/베이커리류", icon: "bread" },

@@ -21,19 +21,35 @@ const getUserById = async (id: number) => {
 
 const createUser = async (data: UserCreateInput) => {
     try {
-        return await prisma.user.create({
-            data,
+        return await prisma.$transaction(async tx => {
+            // 1. 회원 생성
+            const user = await tx.user.create({
+                data,
+            });
+
+            // 2. 기본 냉장고 생성
+            await tx.fridge.create({
+                data: {
+                    userId: user.id,
+                    name: "내 냉장고",
+                },
+            });
+
+            return user;
         });
     } catch (error) {
         if (error instanceof Prisma.PrismaClientKnownRequestError) {
             if (error.code === "P2002") {
                 const errorMessage = error.message;
+
                 if (errorMessage.includes("email")) {
                     throw new Error("ALREADY_EXISTS_EMAIL");
                 }
+
                 if (errorMessage.includes("nickname")) {
                     throw new Error("ALREADY_EXISTS_NICKNAME");
                 }
+
                 throw new Error("UNKNOWN_ERROR");
             }
         }
@@ -41,7 +57,6 @@ const createUser = async (data: UserCreateInput) => {
         throw new Error("UNKNOWN_ERROR");
     }
 };
-
 const login = async (data: LoginInputType) => {
     const user = await prisma.user.findUnique({
         where: {
