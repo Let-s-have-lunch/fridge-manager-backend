@@ -39,7 +39,6 @@ const getUserById = async (req: Request<{ id: string }>, res: Response) => {
     }
 };
 
-
 const updateUser = async (req: Request<{ id: string }>, res: Response) => {
     try {
         const id = Number(req.params.id);
@@ -48,18 +47,33 @@ const updateUser = async (req: Request<{ id: string }>, res: Response) => {
             return;
         }
 
-        const { password, birthdate, ...restData }: AdminUpdateUserInputType = req.body;
+        const { password, birthdate, role, nickname, email }: AdminUpdateUserInputType = req.body;
 
-        const newUser: UserUpdateInput = {
-            ...restData,
-        };
+        const newUser: UserUpdateInput = {};
 
-        if (password) {
+        if (nickname !== undefined) {
+            newUser.nickname = nickname;
+        }
+        if (email !== undefined) {
+            newUser.email = email;
+        }
+        if (role !== undefined) {
+            newUser.role = role;
+        }
+
+        if (password && password.trim() !== "") {
             newUser.password = await passwordUtil.hashPassword(password);
         }
 
-        if (birthdate) {
-            newUser.birthdate = new Date(birthdate);
+        if (birthdate && birthdate.trim() !== "") {
+            const parsedDate = new Date(birthdate);
+            // 유효한 날짜인지 검증 후 할당
+            if (!isNaN(parsedDate.getTime())) {
+                newUser.birthdate = parsedDate;
+            }
+        } else if (birthdate === "") {
+            // 빈 문자열로 들어왔을 때 DB 값을 null이나 비우고 싶다면 아래처럼 처리 (DB Schema 설정에 따라 다를 수 있음)
+            // newUser.birthdate = null;
         }
 
         const result = await adminUserService.updateUser(newUser, id);
@@ -69,16 +83,18 @@ const updateUser = async (req: Request<{ id: string }>, res: Response) => {
             data: result,
         });
     } catch (error) {
+        console.error("Update User Error:", error);
+
         if (error instanceof Error) {
             switch (error.message) {
                 case "USER_NOT_FOUND":
                     res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
                     return;
                 case "ALREADY_EXISTS_EMAIL":
-                    res.status(409).json({ message: "이미 사용 중인 이메일입니다.." });
+                    res.status(409).json({ message: "이미 사용 중인 이메일입니다." });
                     return;
                 case "ALREADY_EXISTS_NICKNAME":
-                    res.status(409).json({ message: "이미 사용 중인 닉네임입니다.." });
+                    res.status(409).json({ message: "이미 사용 중인 닉네임입니다." });
                     return;
             }
         }
