@@ -10,6 +10,7 @@ import noticeRouter from "./routes/noticeRouter.ts";
 import statisticsRouter from "./routes/statisticsRouter.ts";
 import shoppingListTodoRouter from "./routes/shoppingListTodoRouter.ts";
 import inquiryRouter from "./routes/inquiryRouter.ts";
+import adminInquiryRouter from "./routes/admin/inquiry/adminInquiryRouter.ts";
 
 dotenv.config();
 
@@ -33,6 +34,7 @@ app.use("/categories", categoryRouter);
 app.use("/users", userRouter);
 app.use("/notices", noticeRouter);
 app.use("/inquiries", inquiryRouter);
+app.use("/admin/inquiries", adminInquiryRouter);
 app.use("/admin", adminRouter);
 app.use("/statistics", statisticsRouter);
 app.use("/shopping-list", shoppingListTodoRouter);
