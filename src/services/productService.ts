@@ -86,7 +86,6 @@ const createProduct = async (userId: number, fridgeId: number, data: ProductInpu
             unit: data.unit,
             price: data.price ?? null,
             expirationDate: data.expirationDate,
-            addMethod: data.addMethod,
             memo: data.memo ?? null,
             // status는 스키마에 정의된 기본값(STORED, MANUAL)이 자동으로 들어갑니다.
         },
@@ -159,7 +158,6 @@ const createProductsByReceipt = async (
         quantity: item.quantity,
         unit: item.unit as "L" | "EA" | "G" | "KG" | "ML",
         expirationDate: new Date(new Date().setDate(new Date().getDate() + 7)), // 기본 +7일
-        addMethod: "RECEIPT" as const, // 영수증 스캔으로 들어온 데이터임을 명시
         status: "STORED" as const,
     }));
 
@@ -172,7 +170,6 @@ const createProductsByReceipt = async (
     return prisma.product.findMany({
         where: {
             fridgeId: fridgeId,
-            addMethod: "RECEIPT",
         },
         orderBy: { createdAt: "desc" },
         take: result.count, // 방금 생성된 개수만큼만 가져옴

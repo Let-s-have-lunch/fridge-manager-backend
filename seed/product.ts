@@ -1,7 +1,6 @@
 // 확인용 product 생성 씨드 파일입니다. 나중에 개발이 끝나고나면 삭제해도 됩니다.
 
 import {
-    AddMethod,
     ProductStatus,
     RoleType,
     StorageType,
@@ -82,7 +81,6 @@ async function main() {
             price: 3000,
             expirationDate: threeDaysLater, // 임박!
             status: ProductStatus.STORED,
-            addMethod: AddMethod.MANUAL,
         },
         {
             name: "상해버린 돼지고기",
@@ -94,7 +92,6 @@ async function main() {
             price: 15000,
             expirationDate: pastDate, // 지남!
             status: ProductStatus.STORED,
-            addMethod: AddMethod.MANUAL,
         },
         {
             name: "싱싱한 대파",
@@ -106,7 +103,6 @@ async function main() {
             price: 2000,
             expirationDate: safeDate, // 넉넉함
             status: ProductStatus.STORED,
-            addMethod: AddMethod.MANUAL,
         },
 
         // ==========================================
@@ -124,7 +120,6 @@ async function main() {
             name: "계란", categoryId: dairyId, fridgeId: fridge.id,
             storageType: StorageType.REFRIGERATED, quantity: 30, unit: Unit.EA,
             price: 8000, expirationDate: safeDate, status: ProductStatus.CONSUMED,
-            addMethod: AddMethod.MANUAL,
             updatedAt: thisMonth, // 이번 달에 다 먹음
         }
     });
@@ -134,7 +129,6 @@ async function main() {
             name: "계란", categoryId: dairyId, fridgeId: fridge.id,
             storageType: StorageType.REFRIGERATED, quantity: 15, unit: Unit.EA,
             price: 4000, expirationDate: safeDate, status: ProductStatus.CONSUMED,
-            addMethod: AddMethod.MANUAL,
             updatedAt: thisMonth, // 이번 달에 또 먹음 (TOP 3 테스트용)
         }
     });
@@ -144,7 +138,6 @@ async function main() {
             name: "한우 등심", categoryId: meatId, fridgeId: fridge.id,
             storageType: StorageType.REFRIGERATED, quantity: 400, unit: Unit.G,
             price: 45000, expirationDate: safeDate, status: ProductStatus.CONSUMED,
-            addMethod: AddMethod.MANUAL,
             updatedAt: thisMonth, // 이번 달에 비싼거 먹음
         }
     });
@@ -158,7 +151,6 @@ async function main() {
             name: "양배추", categoryId: vegId, fridgeId: fridge.id,
             storageType: StorageType.REFRIGERATED, quantity: 1, unit: Unit.EA,
             price: 5000, expirationDate: pastDate, status: ProductStatus.DISCARDED,
-            addMethod: AddMethod.MANUAL,
             updatedAt: lastMonth, // 저번 달에 버림 (lastMonthWaste = 5000)
         }
     });
@@ -169,7 +161,6 @@ async function main() {
             name: "두부", categoryId: vegId, fridgeId: fridge.id,
             storageType: StorageType.REFRIGERATED, quantity: 1, unit: Unit.EA,
             price: 1500, expirationDate: pastDate, status: ProductStatus.DISCARDED,
-            addMethod: AddMethod.MANUAL,
             updatedAt: thisMonth, // 이번 달에 버림 (thisMonthWaste = 1500) -> 3500원 절약!
         }
     });

@@ -13,7 +13,6 @@ export const productSchema = z.object({
     unit: z.enum(["EA", "G", "KG", "ML", "L"]),
     price: z.number().int().nonnegative("가격은 0 이상이어야 합니다.").optional(), // 💡 일반 사용자도 가격 입력 가능!
     expirationDate: z.string().transform(str => new Date(str)),
-    addMethod: z.enum(["MANUAL", "RECEIPT"]).optional().default("MANUAL"),
     status: z.enum(["STORED", "CONSUMED", "DISCARDED"]).default("STORED"),
 });
 

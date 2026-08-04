@@ -28,11 +28,6 @@ enum Unit {
   L
 }
 
-enum AddMethod {
-  MANUAL
-  RECEIPT
-}
-
 enum RoleType {
   USER
   ADMIN
@@ -120,7 +115,6 @@ model Product {
   updatedAt      DateTime      @updatedAt
   name           String
   memo           String?
-  addMethod      AddMethod     @default(MANUAL) @map("add_method")
   storageType    StorageType   @map("storage_type")
   quantity       Float
   unit           Unit
