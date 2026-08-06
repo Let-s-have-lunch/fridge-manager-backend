@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { validate } from "../middlewares/validate";
-import { noticeSchema } from "../schemas/admin/notice/noticeSchema.ts";
-import adminNoticeController from "../controllers/admin/adminNoticeController.ts";
+import { validate } from "../../../middlewares/validate.ts";
+import { noticeSchema } from "../../../schemas/admin/notice/noticeSchema.ts";
+import adminNoticeController from "../../../controllers/admin/adminNoticeController.ts";
 const router = Router();
 
 router.get("/", adminNoticeController.getNoticeList); // 컨트롤러 함수명에 맞게 조정

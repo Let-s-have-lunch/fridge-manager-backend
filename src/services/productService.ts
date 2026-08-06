@@ -59,7 +59,15 @@ const getProductList = async (userId: number, fridgeId: number) => {
 const getProductById = async (userId: number, productId: number) => {
     const product = await prisma.product.findFirst({
         where: { id: productId, fridge: { userId } },
-        include: { category: true }, // 상세 조회 시 카테고리 정보도 같이 넘겨줍니다
+        include: {
+            category: {
+                select: {
+                    id: true,
+                    name: true,
+                    icon: true,
+                },
+            },
+        }, // 상세 조회 시 카테고리 정보도 같이 넘겨줍니다
     });
 
     if (!product) {
@@ -122,59 +130,6 @@ const deleteProduct = async (userId: number, productId: number) => {
     });
 };
 
-const createProductsByReceipt = async (
-    userId: number,
-    fridgeId: number,
-    imageFile: Express.Multer.File,
-) => {
-    // 💡 1. 영수증을 등록하려는 냉장고가 내 냉장고가 맞는지 먼저 검증!
-    const targetFridge = await prisma.fridge.findFirst({
-        where: { id: fridgeId, userId },
-    });
-    if (!targetFridge) throw new Error("냉장고 접근 권한이 없습니다.");
-
-    // [TODO] 실제 OCR 연동 시 아래 주석 해제 및 적용
-    // const ocrResult = await callNaverOcrApi(imageFile.buffer);
-    // 실제로 ocrResult에 객체 형태의 복잡한 데이터가 저장이 된다.
-    // 거기서 '상품 목록' 배열이 있는 위치까지 찾아들어가서 아래의 parsedItems에 저장을 한다.!
-
-    // 2. OCR (현재는 더미 데이터)
-    const parsedItems = [
-        { name: "서울우유 1L", quantity: 1, unit: "L" },
-        { name: "양파 1망", quantity: 1, unit: "EA" },
-        { name: "돼지고기 삼겹살", quantity: 600, unit: "G" },
-    ];
-
-    // TODO
-    // const ocrResult = await callNaverOcrApi(imageFile.buffer);
-    // const parsedItems = parseReceipt(ocrResult);
-
-    // 3. DB 저장
-    const productsToCreate = parsedItems.map(item => ({
-        fridgeId: fridgeId,
-        categoryId: 9, // ect 카테고리 id
-        name: item.name,
-        storageType: "REFRIGERATED" as const, // 기본값 냉장
-        quantity: item.quantity,
-        unit: item.unit as "L" | "EA" | "G" | "KG" | "ML",
-        expirationDate: new Date(new Date().setDate(new Date().getDate() + 7)), // 기본 +7일
-        status: "STORED" as const,
-    }));
-
-    // 다중 등록 실행
-    const result = await prisma.product.createMany({
-        data: productsToCreate,
-    });
-
-    // 프론트엔드에 방금 등록된 영수증 상품들만 내려주기 위해 재조회
-    return prisma.product.findMany({
-        where: {
-            fridgeId: fridgeId,
-        },
-        orderBy: { createdAt: "desc" },
-        take: result.count, // 방금 생성된 개수만큼만 가져옴
-    });
-};
 
 export default {
     getProductList,
@@ -182,5 +137,4 @@ export default {
     createProduct,
     updateProduct,
     deleteProduct,
-    createProductsByReceipt,
 };

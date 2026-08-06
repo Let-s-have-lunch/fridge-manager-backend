@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authenticate, requiredAdmin } from "../../middlewares/auth.ts";
-import adminNoticeRouter from "../adminNoticeRouter.ts";
+import adminNoticeRouter from "./notice/adminNoticeRouter.ts";
 import adminUserRouter from "./user/adminUserRouter.ts";
 import adminDashboardController from "../../controllers/admin/adminDashboardController.ts";
 import adminInquiryRouter from "./inquiry/adminInquiryRouter.ts";
