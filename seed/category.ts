@@ -18,7 +18,7 @@ const initialCategories = [
     { id: 4, name: "유제품", icon: "milk" },
     { id: 5, name: "가공식품", icon: "processed_food" },
     { id: 6, name: "양념/소스류", icon: "sauce" },
-    { id: 7, name: "반찬류/조리된 음식", icon: "dish" },
+    { id: 7, name: "조리된 음식", icon: "dish" },
     { id: 8, name: "음료", icon: "juice" },
     { id: 9, name: "빵/베이커리류", icon: "bread" },
     { id: 10, name: "간식/과자류", icon: "snack" },
