@@ -5,7 +5,7 @@ import prisma from "../src/config/prisma.ts";
 // 사용자가 앱에서 직접 추가하는 커스텀 카테고리는 isDefault = false 로 저장됩니다.
 
 // 💡 [프론트엔드 사용 가이드]
-// 백엔드의 GET API를 호출하면 "기본 카테고리(9개) + 해당 유저가 직접 만든 카테고리"가 합쳐진 배열이 응답으로 옵니다.
+// 백엔드의 GET API를 호출하면 "기본 카테고리(15개) + 해당 유저가 직접 만든 카테고리"가 합쳐진 배열이 응답으로 옵니다.
 // 프론트엔드에서는 이 배열을 받아 filter 메소드를 이용해 두 그룹으로 나눕니다:
 // 1. item.isDefault === true 인 배열: 화면 상단에 아이콘과 함께 고정 노출
 // 2. item.isDefault === false 인 배열: 그 아래에 사용자가 등록한 카테고리 목록으로 노출
@@ -18,7 +18,7 @@ const initialCategories = [
     { id: 4, name: "유제품", icon: "milk" },
     { id: 5, name: "가공식품", icon: "processed_food" },
     { id: 6, name: "양념/소스류", icon: "sauce" },
-    { id: 7, name: "반찬류/조리된 음식", icon: "dish" },
+    { id: 7, name: "조리된 음식", icon: "dish" },
     { id: 8, name: "음료", icon: "juice" },
     { id: 9, name: "빵/베이커리류", icon: "bread" },
     { id: 10, name: "간식/과자류", icon: "snack" },

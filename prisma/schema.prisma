@@ -93,7 +93,7 @@ model Fridge {
 model Category {
   id        Int     @id @default(autoincrement())
   name      String
-  icon      String  @default("star-outline")
+  icon      String  @default("tag")
   isDefault Boolean @default(false) @map("is_default")
 
   createdAt DateTime  @default(now())
