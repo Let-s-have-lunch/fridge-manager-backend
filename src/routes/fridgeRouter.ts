@@ -1,7 +1,7 @@
 import { Router } from "express";
 import fridgeController from "../controllers/fridgeController.ts";
 import { validate } from "../middlewares/validate.ts";
-import { fridgeSchema } from "../schemas/fridgeSchema.ts";
+import { fridgeSchema } from "../schemas/fridge/fridgeSchema.ts";
 import { authenticate } from "../middlewares/auth.ts";
 
 const router = Router();

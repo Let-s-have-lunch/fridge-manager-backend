@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { validate } from "../middlewares/validate.ts";
-import { categorySchema } from "../schemas/categorySchema.ts";
+import { categorySchema } from "../schemas/category/categorySchema.ts";
 import categoryController from "../controllers/categoryController.ts";
 import { authenticate } from "../middlewares/auth.ts";
 

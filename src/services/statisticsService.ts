@@ -109,7 +109,7 @@ const getDashboardData = async (
                 name: item.name,
                 useCount: item._count.name,
                 totalPrice: item._sum.price || 0,
-                icon: sampleProduct?.category?.icon || "shopping-bag", // 👈 카테고리에 저장된 아이콘 이름 추출! (없으면 기본값)
+                icon: sampleProduct?.category?.icon || "tag", // 👈 카테고리에 저장된 아이콘 이름 추출! (없으면 기본값)
             };
         })
     );

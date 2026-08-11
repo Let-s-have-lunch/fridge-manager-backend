@@ -1,6 +1,6 @@
 import { Response } from "express";
 import { AuthRequest } from "../middlewares/auth.ts";
-import { FridgeInputType } from "../schemas/fridgeSchema.ts";
+import { FridgeInputType } from "../schemas/fridge/fridgeSchema.ts";
 import fridgeService from "../services/fridgeService.ts";
 
 const getFridgeList = async (req: AuthRequest, res: Response) => {

@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import categoryService from "../services/categoryService.ts";
-import { CategoryInputType } from "../schemas/categorySchema.ts";
+import { CategoryInputType } from "../schemas/category/categorySchema.ts";
 import { AuthRequest } from "../middlewares/auth.ts";
 
 const getCategoryList = async (req: AuthRequest, res: Response) => {

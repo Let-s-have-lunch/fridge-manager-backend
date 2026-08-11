@@ -1,5 +1,5 @@
 import prisma from "../config/prisma.ts";
-import { ProductInputType } from "../schemas/productSchema.ts";
+import { ProductInputType } from "../schemas/prodict/productSchema.ts";
 
 const getProductList = async (userId: number, fridgeId: number) => {
     // 📢 [프론트엔드 팀원분들 필독!] 📢

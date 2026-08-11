@@ -1,6 +1,6 @@
 import { Response } from "express";
 import productService from "../services/productService.ts";
-import { ProductInputType } from "../schemas/productSchema.ts";
+import { ProductInputType } from "../schemas/prodict/productSchema.ts";
 import { AuthRequest } from "../middlewares/auth.ts";
 
 const getProductList = async (req: AuthRequest, res: Response) => {
