@@ -15,12 +15,4 @@ router.get("/:productId", productController.getProductById);
 router.patch("/:productId", validate(productSchema), productController.updateProduct);
 router.delete("/:productId", productController.deleteProduct);
 
-// 영수증 스캔으로 제품 다중 등록
-router.post(
-    "/fridge/:fridgeId/receipt",
-    authenticate,
-    upload.single("receiptImage"),
-    productController.createProductsByReceipt,
-);
-
 export default router;
