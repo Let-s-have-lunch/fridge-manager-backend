@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { validate } from "../middlewares/validate.ts";
-import { productSchema } from "../schemas/prodict/productSchema.ts";
+import { productSchema } from "../schemas/product/productSchema.ts";
 import productController from "../controllers/productController.ts";
 import { upload } from "../middlewares/uploadMiddleware.ts";
 import { authenticate } from "../middlewares/auth.ts";
